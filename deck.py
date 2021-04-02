@@ -56,8 +56,8 @@ def n_members(length, lumber_width, max_span):
     return math.ceil(width_minus_last / max_span) + 1
 
 
-def oc_spacing(frame_width, lumber_width, n_members):
-    return (frame_width - lumber_width) / (n_members - 1)
+def oc_spacing(frame_width, lumber_width, n):
+    return (frame_width - lumber_width) / (n - 1)
 
 
 def frame(
@@ -81,7 +81,6 @@ def frame(
     n_beams = n_members(inner_length, beam_width, max_span=joist_spans[joist_height])
     # beam_spacing = oc_spacing(inner_length, lumber_width=TWO, n_members=n_beams)
     joist_len = length / (n_beams - 1)
-
 
     # Build the f
     f = rim_joist(width)
