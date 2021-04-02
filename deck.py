@@ -41,13 +41,12 @@ def lumber(h, w, orient_towards='x'):
         raise ValueError("Invalid argument `orient_towards`. Value must be one of 'x', 'y', or 'z'")
 
     def inner(length):
-        obj = s.cube([length, h, w])
-        rotate_axis = [0, 0, 0]
+        x, y, z = length, h, w
         if orient_towards == 'y':
-            rotate_axis[Z] = 90
+            x, y = y, x
         elif orient_towards == 'z':
-            rotate_axis[Y] = 90
-        return su.rotate(rotate_axis)(obj)
+            x, z = z, x
+        return s.cube([x, y, z])
 
     return inner
 
@@ -96,3 +95,7 @@ def frame(
     return f
 
 
+deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
+    - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
+    - su.up(8)(s.cube([1.5, 12, 4], center=True)) \
+    - su.up(7)(s.cube([3.5, 3.5, 2], center=True))
