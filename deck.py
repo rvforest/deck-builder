@@ -67,8 +67,11 @@ def frame(
         joist_width=TWO,
         max_spacing=16,
         joist_overhang=ft(2),
-        beam_width=TWO
+        flush_beam=False,
+        beam_width=None
 ):
+    if flush_beam and (beam_width is None):
+        raise ValueError("Beam width must be supplied if flush_beam is True")
     # Specify lumber sizes
     joist = lumber(joist_width, joist_height)
     rim_joist = lumber(joist_width, joist_height, orient_towards='y')
@@ -77,10 +80,15 @@ def frame(
     n_joists = n_members(width, lumber_width=TWO, max_span=max_spacing)
     spacing = oc_spacing(width, joist_width, n_joists)
 
-    inner_length = length - 2 * joist_overhang
-    n_beams = n_members(inner_length, beam_width, max_span=joist_spans[joist_height])
-    # beam_spacing = oc_spacing(inner_length, lumber_width=TWO, n_members=n_beams)
-    joist_len = length / (n_beams - 1)
+    if flush_beam:
+        inner_length = length - 2 * joist_overhang
+        n_beams = n_members(inner_length, beam_width, max_span=joist_spans[joist_height])
+        joist_len = length / (n_beams - 1)
+    else:
+        n_beams = 2
+        beam_width = 0
+        joist_len = length
+
 
     # Build the f
     f = rim_joist(width)
