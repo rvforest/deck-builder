@@ -134,7 +134,7 @@ class Deck:
             row_position += self.joist_len + self.joist_width
             f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
 
-        return f
+        return su.up(self.height)(f)
 
 
 class FlushBeamDeck(Deck):
