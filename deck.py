@@ -130,6 +130,16 @@ class FlushBeamDeck(Deck):
         return self._frame(self.n_beams - 1, joist_len, row_offset=self.beam_width)
 
 
+class DeckJoistsOnBlocks(Deck):
+
+    def blocks(self):
+        b = []
+        for i in range(self.n_beams):
+            for j in range(1, self.n_joists - 1):
+                b.append(su.forward(i * self.beam_spacing + self.beam_overhang)(su.right(j * self.joist_spacing)(deck_block)))
+        return sum(b)
+
+
 deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
              - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
              - su.up(8)(s.cube([1.5, 12, 4], center=True)) \
