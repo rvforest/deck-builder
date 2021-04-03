@@ -60,49 +60,73 @@ def oc_spacing(frame_width, lumber_width, n):
     return (frame_width - lumber_width) / (n - 1)
 
 
-def frame(
-        width,
-        length,
-        joist_height=EIGHT,
-        joist_width=TWO,
-        max_spacing=16,
-        joist_overhang=ft(2),
-        flush_beam=False,
-        beam_width=None
-):
-    if flush_beam and (beam_width is None):
-        raise ValueError("Beam width must be supplied if flush_beam is True")
-    # Specify lumber sizes
-    joist = lumber(joist_width, joist_height)
-    rim_joist = lumber(joist_width, joist_height, orient_towards='y')
+class Deck:
 
-    # Get spacing
-    n_joists = n_members(width, lumber_width=TWO, max_span=max_spacing)
-    spacing = oc_spacing(width, joist_width, n_joists)
+    def __init__(
+            self,
+            width,
+            length,
+            joist_height=EIGHT,
+            joist_width=TWO,
+            max_spacing=16,
+            joist_overhang=ft(2),
+            beam_height=EIGHT,
+            beam_width=FOUR,
+            beam_overhang=ft(2)
+    ):
+        self.width = width
+        self.length = length
+        self.joist_height = joist_height
+        self.joist_width = joist_width
+        self.max_spacing = max_spacing
+        self.joist_overhang = joist_overhang
+        self.beam_height = beam_height
+        self.beam_width = beam_width
+        self.beam_overhang = beam_overhang
 
-    if flush_beam:
-        inner_length = length - 2 * joist_overhang
-        n_beams = n_members(inner_length, beam_width, max_span=joist_spans[joist_height])
-        joist_len = length / (n_beams - 1)
-    else:
-        n_beams = 2
-        beam_width = 0
-        joist_len = length
+    @property
+    def n_joists(self):
+        return n_members(self.width, lumber_width=TWO, max_span=self.max_spacing)
+
+    @property
+    def n_beams(self):
+        return n_members(self.inner_length, self.beam_width, max_span=joist_spans[self.joist_height])
+
+    @property
+    def inner_length(self):
+        return self.length - 2 * self.joist_overhang
+
+    def frame(self):
+        return self._frame(n_joist_spans=1, joist_len=self.length)
+
+    def _frame(self, n_joist_spans, joist_len, row_offset=0.0):
+        spacing = oc_spacing(self.width, self.joist_width, self.n_joists)
+        rim_joist = lumber(self.joist_width, self.joist_height, orient_towards='y')
+        joist = lumber(self.joist_width, self.joist_height)
+        f = rim_joist(self.width)
+        row_position = row_offset
+        for i in range(n_joist_spans):
+            for j in range(0, self.n_joists):
+                f += su.right(row_position)(su.forward(j * spacing)(joist(joist_len)))
+            row_position += joist_len + self.joist_width
+            f += su.right(row_position - self.joist_width)(rim_joist(self.width))
+
+        return f
 
 
-    # Build the f
-    f = rim_joist(width)
-    row_position = beam_width
-    for i in range(n_beams - 1):
-        for j in range(0, n_joists):
-            f += su.right(row_position)(su.forward(j * spacing)(joist(joist_len)))
-        row_position += joist_len + joist_width
-        f += su.right(row_position - joist_width)(rim_joist(width))
+class FlushBeamDeck(Deck):
 
-    return f
+    def frame(self):
+        joist_len = self.length / (self.n_beams - 1)
+        return self._frame(self.n_beams - 1, joist_len, row_offset=self.beam_width)
 
 
 deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
-    - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
-    - su.up(8)(s.cube([1.5, 12, 4], center=True)) \
-    - su.up(7)(s.cube([3.5, 3.5, 2], center=True))
+             - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
+             - su.up(8)(s.cube([1.5, 12, 4], center=True)) \
+             - su.up(7)(s.cube([3.5, 3.5, 2], center=True))
+
+
+if __name__ == '__main__':
+    d = FlushBeamDeck(ft(20), ft(16))
+    foo = d.frame()
