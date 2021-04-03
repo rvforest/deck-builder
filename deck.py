@@ -66,23 +66,27 @@ class Deck:
             self,
             width,
             length,
-            joist_height=EIGHT,
+            height,
+            joist_thickness=EIGHT,
             joist_width=TWO,
             max_spacing=16,
             joist_overhang=ft(2),
-            beam_height=EIGHT,
+            beam_thickness=EIGHT,
             beam_width=FOUR,
-            beam_overhang=ft(2)
+            beam_overhang=ft(2),
+            decking_thickness=ONE
     ):
         self.width = width
         self.length = length
-        self.joist_height = joist_height
+        self.height = height
+        self.joist_thickness = joist_thickness
         self.joist_width = joist_width
         self.max_spacing = max_spacing
         self.joist_overhang = joist_overhang
-        self.beam_height = beam_height
+        self.beam_thickness = beam_thickness
         self.beam_width = beam_width
         self.beam_overhang = beam_overhang
+        self.decking_thickness = decking_thickness
 
     @property
     def n_joists(self):
@@ -90,7 +94,7 @@ class Deck:
 
     @property
     def n_beams(self):
-        return n_members(self.inner_length, self.beam_width, max_span=joist_spans[self.joist_height])
+        return n_members(self.inner_length, self.beam_width, max_span=joist_spans[self.joist_thickness])
 
     @property
     def inner_length(self):
@@ -110,8 +114,8 @@ class Deck:
         return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
 
     def _frame(self, n_joist_spans, joist_len, row_offset=0.0):
-        rim_joist = lumber(self.joist_width, self.joist_height)
-        joist = lumber(self.joist_width, self.joist_height, orient_towards='y')
+        rim_joist = lumber(self.joist_width, self.joist_thickness)
+        joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
         f = rim_joist(self.width)
         row_position = row_offset
         for i in range(n_joist_spans):
