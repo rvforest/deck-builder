@@ -165,6 +165,9 @@ class DeckJoistsOnBlocks(Deck):
                 )
         return sum(b)
 
+    def all(self):
+        return self.frame() + self.blocks()
+
 
 deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
              - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
