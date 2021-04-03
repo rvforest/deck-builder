@@ -99,15 +99,24 @@ class Deck:
     def frame(self):
         return self._frame(n_joist_spans=1, joist_len=self.length)
 
+    @property
+    def joist_spacing(self):
+        """Amount of space between joists."""
+        return oc_spacing(self.width, self.joist_width, self.n_joists)
+
+    @property
+    def beam_spacing(self):
+        """Amount of space between joists."""
+        return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
+
     def _frame(self, n_joist_spans, joist_len, row_offset=0.0):
-        spacing = oc_spacing(self.width, self.joist_width, self.n_joists)
         rim_joist = lumber(self.joist_width, self.joist_height, orient_towards='y')
         joist = lumber(self.joist_width, self.joist_height)
         f = rim_joist(self.width)
         row_position = row_offset
         for i in range(n_joist_spans):
             for j in range(0, self.n_joists):
-                f += su.right(row_position)(su.forward(j * spacing)(joist(joist_len)))
+                f += su.right(row_position)(su.forward(j * self.joist_spacing)(joist(joist_len)))
             row_position += joist_len + self.joist_width
             f += su.right(row_position - self.joist_width)(rim_joist(self.width))
 
