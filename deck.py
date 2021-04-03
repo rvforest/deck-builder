@@ -88,7 +88,6 @@ class Deck:
         self.beam_overhang = beam_overhang
         self.decking_thickness = decking_thickness
 
-
     @property
     def n_joist_spans(self):
         return 1
@@ -123,6 +122,14 @@ class Deck:
         """Amount of space between joists."""
         return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
 
+    @property
+    def frame_height(self):
+        return self.height - self.decking_thickness
+
+    @property
+    def beam_height(self):
+        return self.frame_height - self.joist_thickness
+
     def frame(self):
         rim_joist = lumber(self.joist_width, self.joist_thickness)
         joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
@@ -134,7 +141,7 @@ class Deck:
             row_position += self.joist_len + self.joist_width
             f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
 
-        return su.up(self.height)(f)
+        return su.up(self.beam_height)(f)
 
 
 class FlushBeamDeck(Deck):
