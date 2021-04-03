@@ -177,9 +177,9 @@ class DeckJoistsOnBlocks(Deck):
 
 
 deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
-             - su.up(8)(s.cube([12, 1.5, 4], center=True)) \
-             - su.up(8)(s.cube([1.5, 12, 4], center=True)) \
-             - su.up(7)(s.cube([3.5, 3.5, 2], center=True))
+             - su.up(6 + FOUR / 2)(s.cube([12, TWO, FOUR], center=True)) \
+             - su.up(6 + FOUR / 2)(s.cube([TWO, 12, FOUR], center=True)) \
+             - su.up(6 + 1)(s.cube([FOUR, FOUR, 2], center=True))
 
 
 if __name__ == '__main__':
