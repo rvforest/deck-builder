@@ -88,6 +88,19 @@ class Deck:
         self.beam_overhang = beam_overhang
         self.decking_thickness = decking_thickness
 
+
+    @property
+    def n_joist_spans(self):
+        return 1
+
+    @property
+    def joist_len(self):
+        return self.length
+
+    @property
+    def row_offset(self):
+        return 0
+
     @property
     def n_joists(self):
         return n_members(self.width, lumber_width=TWO, max_span=self.max_spacing)
@@ -100,9 +113,6 @@ class Deck:
     def inner_length(self):
         return self.length - 2 * self.joist_overhang
 
-    def frame(self):
-        return self._frame(n_joist_spans=1, joist_len=self.length)
-
     @property
     def joist_spacing(self):
         """Amount of space between joists."""
@@ -113,15 +123,15 @@ class Deck:
         """Amount of space between joists."""
         return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
 
-    def _frame(self, n_joist_spans, joist_len, row_offset=0.0):
+    def frame(self):
         rim_joist = lumber(self.joist_width, self.joist_thickness)
         joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
         f = rim_joist(self.width)
-        row_position = row_offset
-        for i in range(n_joist_spans):
+        row_position = self.row_offset
+        for i in range(self.n_joist_spans):
             for j in range(0, self.n_joists):
-                f += su.forward(row_position)(su.right(j * self.joist_spacing)(joist(joist_len)))
-            row_position += joist_len + self.joist_width
+                f += su.forward(row_position)(su.right(j * self.joist_spacing)(joist(self.joist_len)))
+            row_position += self.joist_len + self.joist_width
             f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
 
         return f
@@ -129,9 +139,17 @@ class Deck:
 
 class FlushBeamDeck(Deck):
 
-    def frame(self):
-        joist_len = self.length / (self.n_beams - 1)
-        return self._frame(self.n_beams - 1, joist_len, row_offset=self.beam_width)
+    @property
+    def n_joist_spans(self):
+        return self.n_beams - 1
+
+    @property
+    def joist_len(self):
+        return self.length / (self.n_beams - 1)
+
+    @property
+    def row_offset(self):
+        return self.beam_width
 
 
 class DeckJoistsOnBlocks(Deck):
@@ -140,7 +158,11 @@ class DeckJoistsOnBlocks(Deck):
         b = []
         for i in range(self.n_beams):
             for j in range(1, self.n_joists - 1):
-                b.append(su.forward(i * self.beam_spacing + self.beam_overhang)(su.right(j * self.joist_spacing)(deck_block)))
+                b.append(
+                    su.forward(i * self.beam_spacing + self.beam_overhang)(
+                        su.right(j * self.joist_spacing)(deck_block)
+                    )
+                )
         return sum(b)
 
 
@@ -151,5 +173,5 @@ deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, cente
 
 
 if __name__ == '__main__':
-    d = FlushBeamDeck(ft(20), ft(16))
+    d = FlushBeamDeck(ft(20), ft(16), 8)
     foo = d.frame()
