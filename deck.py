@@ -110,15 +110,15 @@ class Deck:
         return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
 
     def _frame(self, n_joist_spans, joist_len, row_offset=0.0):
-        rim_joist = lumber(self.joist_width, self.joist_height, orient_towards='y')
-        joist = lumber(self.joist_width, self.joist_height)
+        rim_joist = lumber(self.joist_width, self.joist_height)
+        joist = lumber(self.joist_width, self.joist_height, orient_towards='y')
         f = rim_joist(self.width)
         row_position = row_offset
         for i in range(n_joist_spans):
             for j in range(0, self.n_joists):
-                f += su.right(row_position)(su.forward(j * self.joist_spacing)(joist(joist_len)))
+                f += su.forward(row_position)(su.right(j * self.joist_spacing)(joist(joist_len)))
             row_position += joist_len + self.joist_width
-            f += su.right(row_position - self.joist_width)(rim_joist(self.width))
+            f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
 
         return f
 
