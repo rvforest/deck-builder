@@ -170,7 +170,7 @@ class DeckJoistsOnBlocks(Deck):
                         su.right(j * self.joist_spacing + TWO / 2)(deck_block)
                     )
                 )
-        return sum(b)
+        return su.up(self.beam_height - BLOCK_SLOT_HEIGHT)(sum(b))
 
     def all(self):
         return self.frame() + self.blocks()
@@ -182,6 +182,46 @@ deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, cente
              - su.up(6 + 1)(s.cube([FOUR, FOUR, 2], center=True))
 
 
+ground_points = [
+    [0, 0, 0],
+    [20 * 12, 0, -3],
+    [0, 16 * 12, -3],
+    [20 * 12, 16 * 12, -3.5],
+    [10 * 12, 8 * 12, -3.5]
+]
+ground_faces = [
+    [0, 1, 2],
+    [1, 2, 3],
+    [0, 1, 4],
+    [1, 3, 4],
+    [3, 2, 4],
+    [2, 0, 4]
+]
+ground = s.polyhedron(ground_points, ground_faces)
+
+BLUE = (0.5, 0.5, 1)
+WALL_START = -120
+WALL_DECK_GAP = 1
+HOUSE_WALL_LEN = 40 * 12
+HOUSE_HEIGHT = 240
+WALL_THICKNESS = 12
+THRESHOLD_HEIGHT = 8
+GROUND_HEIGHT_AT_DOOR = -3.0
+DOOR_WIDTH = 36
+DOOR_START = 19.5 * 12 - DOOR_WIDTH  # Reference from NW corner of deck
+DOOR_HEIGHT = 80
+house = s.translate((WALL_START, -WALL_DECK_GAP - WALL_THICKNESS, -3))(
+        s.color(BLUE)(s.cube([HOUSE_WALL_LEN, WALL_THICKNESS, HOUSE_HEIGHT])),
+)
+# Add door
+house = su.difference()(
+    house,
+    s.translate((DOOR_START, -2 * WALL_THICKNESS, THRESHOLD_HEIGHT + GROUND_HEIGHT_AT_DOOR))(
+        s.cube([DOOR_WIDTH, 3 * WALL_THICKNESS, DOOR_HEIGHT])
+    )
+)
+
+
 if __name__ == '__main__':
-    d = DeckJoistsOnBlocks(ft(20), ft(16), 6 + 5.5 + 0.75)
-    foo = d.all()
+    d = DeckJoistsOnBlocks(ft(20), ft(16), 3.5)
+    s.scad_render_to_file(ground + house + d.all(), 'foo.scad')
