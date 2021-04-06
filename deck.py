@@ -167,7 +167,7 @@ class DeckJoistsOnBlocks(Deck):
             for j in range(1, self.n_joists - 1):
                 b.append(
                     su.forward(i * self.beam_spacing + self.beam_overhang)(
-                        su.right(j * self.joist_spacing)(deck_block)
+                        su.right(j * self.joist_spacing + TWO / 2)(deck_block)
                     )
                 )
         return sum(b)
