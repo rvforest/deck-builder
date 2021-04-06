@@ -130,6 +130,10 @@ class Deck:
     def beam_height(self):
         return self.frame_height - self.joist_thickness
 
+    @property
+    def post_height(self):
+        return self.beam_height - self.beam_thickness
+
     def frame(self):
         rim_joist = lumber(self.joist_width, self.joist_thickness)
         joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
@@ -142,6 +146,10 @@ class Deck:
             f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
 
         return su.up(self.beam_height)(f)
+
+    def planking(self):
+        plank = s.cube([20 * 12, 5.5, .75])
+        return su.up(self.frame_height)(plank)
 
 
 class FlushBeamDeck(Deck):
@@ -176,10 +184,14 @@ class DeckJoistsOnBlocks(Deck):
         return self.frame() + self.blocks() + self.planking()
 
 
-deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
-             - su.up(6 + FOUR / 2)(s.cube([12, TWO, FOUR], center=True)) \
-             - su.up(6 + FOUR / 2)(s.cube([TWO, 12, FOUR], center=True)) \
-             - su.up(6 + 1)(s.cube([FOUR, FOUR, 2], center=True))
+BLOCK_HEIGHT = 7.75
+BLOCK_SLOT_HEIGHT = 6
+BLOCK_BASE_LEN = 10.75
+BLOCK_TOP_LEN = 8
+deck_block = su.linear_extrude(height=BLOCK_HEIGHT, scale=BLOCK_TOP_LEN/BLOCK_BASE_LEN)(s.square(10.75, center=True)) \
+             - su.up(BLOCK_SLOT_HEIGHT + FOUR / 2)(s.cube([12, TWO, FOUR], center=True)) \
+             - su.up(BLOCK_SLOT_HEIGHT + FOUR / 2)(s.cube([TWO, 12, FOUR], center=True)) \
+             - su.up(BLOCK_SLOT_HEIGHT + 1)(s.cube([FOUR, FOUR, 2], center=True))
 
 
 ground_points = [
@@ -223,5 +235,5 @@ house = su.difference()(
 
 
 if __name__ == '__main__':
-    d = DeckJoistsOnBlocks(ft(20), ft(16), 3.5)
+    d = DeckJoistsOnBlocks(ft(16), ft(16), 8)
     s.scad_render_to_file(ground + house + d.all(), 'foo.scad')
