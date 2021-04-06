@@ -173,7 +173,7 @@ class DeckJoistsOnBlocks(Deck):
         return su.up(self.beam_height - BLOCK_SLOT_HEIGHT)(sum(b))
 
     def all(self):
-        return self.frame() + self.blocks()
+        return self.frame() + self.blocks() + self.planking()
 
 
 deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, center=True)) \
