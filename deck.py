@@ -67,7 +67,7 @@ class Deck:
             width,
             length,
             height,
-            joist_thickness=EIGHT,
+            joist_thickness=SIX,
             joist_width=TWO,
             max_spacing=16,
             joist_overhang=ft(2),
@@ -183,5 +183,5 @@ deck_block = su.linear_extrude(height=7.75, scale=8/10.75)(s.square(10.75, cente
 
 
 if __name__ == '__main__':
-    d = FlushBeamDeck(ft(20), ft(16), 8)
-    foo = d.frame()
+    d = DeckJoistsOnBlocks(ft(20), ft(16), 6 + 5.5 + 0.75)
+    foo = d.all()
