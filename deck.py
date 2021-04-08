@@ -134,6 +134,9 @@ class Deck:
     def post_height(self):
         return self.beam_height - self.beam_thickness
 
+    def footings(self):
+        raise NotImplementedError
+
     def frame(self):
         rim_joist = lumber(self.joist_width, self.joist_thickness)
         joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
@@ -169,7 +172,7 @@ class FlushBeamDeck(Deck):
 
 class DeckJoistsOnBlocks(Deck):
 
-    def blocks(self):
+    def footings(self):
         b = []
         for i in range(self.n_beams):
             for j in range(1, self.n_joists - 1):
@@ -181,7 +184,7 @@ class DeckJoistsOnBlocks(Deck):
         return su.up(self.beam_height - BLOCK_SLOT_HEIGHT)(sum(b))
 
     def all(self):
-        return self.frame() + self.blocks() + self.planking()
+        return self.frame() + self.footings() + self.planking()
 
 
 BLOCK_HEIGHT = 7.75
