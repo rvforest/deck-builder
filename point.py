@@ -1,8 +1,14 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from enum import Enum
 from typing import Tuple
 
-from shapes import X, Y, Z
+
+
+class Dim(Enum):
+    X = 0
+    Y = 1
+    Z = 2
 
 
 @dataclass
@@ -21,6 +27,6 @@ class Point3D:
     def as_tuple(self) -> Tuple[float, float, float]:
         return self.x, self.y, self.z
 
-    def drop_dim(self, dim: int) -> Tuple[float, float]:
-        keep_dims = list({X, Y, Z} - {dim})
-        return self[keep_dims[0]], self[keep_dims[1]]
+    def get_2d_point(self, exclude_dim: Dim) -> Tuple[float, float]:
+        keep_dims = [self[d] for d in Dim if d != exclude_dim]
+        return tuple(*keep_dims)

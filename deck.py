@@ -11,10 +11,6 @@ EIGHT = 7.25
 TEN = 9.25
 TWELVE = 11.25
 
-X = 0
-Y = 1
-Z = 2
-
 
 def ft(f):
     return 12 * f

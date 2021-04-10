@@ -3,10 +3,10 @@ from typing import Iterable
 import ezdxf
 from ezdxf.layouts import Modelspace
 
-from shapes import Shape
+from shapes import Shape, Dim
 
 
-def draw_face(shapes: Iterable[Shape], face: str, msp: Modelspace, layer=None):
+def draw_face(shapes: Iterable[Shape], face: Dim, msp: Modelspace, layer=None):
     dxfattrib = {}
     if layer:
         dxfattrib['layer'] = layer
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     s = [Cuboid(2, 6, 120, Point3D(1, 2, 0)), Cuboid(120, 2, 3, Point3D(0, 0, 0))]
     draw_face(
         s,
-        'top',
+        Dim.Z,
         modelspace
     )
     doc.saveas('foo.dxf')

@@ -3,12 +3,8 @@ from dataclasses import dataclass
 from itertools import product
 from typing import List, Tuple, Protocol
 
-from point import Point3D
+from point import Dim, Point3D
 from utils import xor
-
-X = 0
-Y = 1
-Z = 2
 
 
 class Shape(Protocol):
@@ -64,19 +60,19 @@ class Cuboid:
 
     def get_2d_path(self, face: str) -> List[Tuple[float, float]]:
         exclude_dim = {
-            'front': Y,
-            'back': Y,
-            'top': Z,
-            'bottom': Z,
-            'left': X,
-            'right': X
+            'front': Dim.Y,
+            'back': Dim.Y,
+            'top': Dim.Z,
+            'bottom': Dim.Z,
+            'left': Dim.X,
+            'right': Dim.X
         }
         valid_vals = list(exclude_dim.keys())
         if face not in valid_vals:
             raise ValueError(f"Invalid value face='{face}'. Argument must be one of: {', '.join(valid_vals)}")
 
         points = getattr(self, face) + [self.position]
-        return [point.drop_dim(exclude_dim[face]) for point in points]
+        return [point.get_2d_point(exclude_dim[face]) for point in points]
 
     def _side(self, **kwargs) -> List[Point3D]:
         var_axes = list({'x', 'y', 'z'} - set((kwargs.keys())))
