@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from itertools import product
 from typing import List, Tuple, Protocol
 
-from point import Point
+from point import Point3D
 from utils import xor
 
 X = 0
@@ -13,7 +13,7 @@ Z = 2
 
 class Shape(Protocol):
 
-    position: Point
+    position: Point3D
 
     @abstractmethod
     def get_path(self, face: str) -> List[Tuple[float, float, float]]:
@@ -29,30 +29,30 @@ class Cuboid:
     x_len: float
     y_len: float
     z_len: float
-    position: Point
+    position: Point3D
 
     @property
-    def bottom(self) -> List[Point]:
+    def bottom(self) -> List[Point3D]:
         return self._side(z=self.position.z)
 
     @property
-    def top(self) -> List[Point]:
+    def top(self) -> List[Point3D]:
         return self._side(z=self.z_len)
 
     @property
-    def back(self) -> List[Point]:
+    def back(self) -> List[Point3D]:
         return self._side(x=self.position.x)
 
     @property
-    def front(self) -> List[Point]:
+    def front(self) -> List[Point3D]:
         return self._side(x=self.x_len)
 
     @property
-    def left(self) -> List[Point]:
+    def left(self) -> List[Point3D]:
         return self._side(y=0)
 
     @property
-    def right(self) -> List[Point]:
+    def right(self) -> List[Point3D]:
         return self._side(y=self.y_len)
 
     def get_path(self, face: str) -> List[Tuple[float, float, float]]:
@@ -78,20 +78,20 @@ class Cuboid:
         points = getattr(self, face) + [self.position]
         return [point.drop_dim(exclude_dim[face]) for point in points]
 
-    def _side(self, **kwargs) -> List[Point]:
+    def _side(self, **kwargs) -> List[Point3D]:
         var_axes = list({'x', 'y', 'z'} - set((kwargs.keys())))
         result = []
         for i, j in product([False, True], repeat=2):
             dims = kwargs.copy()
             dims[var_axes[0]] = i * getattr(self, var_axes[0] + '_len')
             dims[var_axes[1]] = xor(i, j) * getattr(self, var_axes[1] + '_len')
-            result.append(Point(**dims) + self.position)
+            result.append(Point3D(**dims) + self.position)
 
         return result
 
 
 if __name__ == '__main__':
-    print(Cuboid(2, 6, 120, Point(1, 1, 0)).top)
-    print(Cuboid(2, 6, 120, Point(1, 1, 0)).bottom)
-    print(Cuboid(2, 6, 120, Point(1, 1, 0)).front)
-    print(Cuboid(2, 6, 120, Point(1, 1, 0)).get_path('bottom'))
+    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).top)
+    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).bottom)
+    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).front)
+    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).get_path('bottom'))

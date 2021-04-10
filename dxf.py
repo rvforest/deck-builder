@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     doc = ezdxf.new(dxfversion='AC1024')
     modelspace = doc.modelspace()
-    s = [Cuboid(2, 6, 120, Point(1, 2, 0)), Cuboid(120, 2, 3, Point(0, 0, 0))]
+    s = [Cuboid(2, 6, 120, Point3D(1, 2, 0)), Cuboid(120, 2, 3, Point3D(0, 0, 0))]
     draw_face(
         s,
         'top',

@@ -6,13 +6,13 @@ from shapes import X, Y, Z
 
 
 @dataclass
-class Point:
+class Point3D:
     x: float
     y: float
     z: float
 
-    def __add__(self, other: Point):
-        return Point(self.x + other.x, self.y + other.y, self.z + other.z)
+    def __add__(self, other: Point3D):
+        return Point3D(self.x + other.x, self.y + other.y, self.z + other.z)
 
     def __getitem__(self, item):
         vals = (self.x, self.y, self.z)
