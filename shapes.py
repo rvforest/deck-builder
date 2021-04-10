@@ -34,6 +34,8 @@ class Point:
 
 class Shape(Protocol):
 
+    position: Point
+
     @abstractmethod
     def get_path(self, face: str) -> List[Tuple[float, float, float]]:
         raise NotImplementedError
