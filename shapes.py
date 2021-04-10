@@ -56,7 +56,7 @@ class Cuboid:
         if face not in valid_vals:
             raise ValueError(f"Invalid value face='{face}'. Argument must be one of: {', '.join(valid_vals)}")
         points = getattr(self, face) + [self.position]
-        return [point.as_tuple() for point in points]
+        return [point for point in points]
 
     def get_2d_path(self, face: str) -> List[Tuple[float, float]]:
         exclude_dim = {

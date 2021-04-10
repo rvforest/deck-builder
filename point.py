@@ -1,8 +1,8 @@
 from __future__ import annotations
-from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple
+from typing import Tuple, TypeVar
 
+T = TypeVar('T')
 
 
 class Dim(Enum):
@@ -11,22 +11,64 @@ class Dim(Enum):
     Z = 2
 
 
-@dataclass
-class Point3D:
-    x: float
-    y: float
-    z: float
+class NDPoint:
 
-    def __add__(self, other: Point3D):
-        return Point3D(self.x + other.x, self.y + other.y, self.z + other.z)
+    @property
+    def ndim(self) -> int:
+        raise NotImplementedError
 
-    def __getitem__(self, item):
-        vals = (self.x, self.y, self.z)
-        return vals[item]
+    @property
+    def _dim_vals(self) -> Tuple[float, ...]:
+        raise NotImplementedError
 
-    def as_tuple(self) -> Tuple[float, float, float]:
+    def __iter__(self) -> float:
+        yield from self._dim_vals
+
+    def __getitem__(self, item: Dim) -> float:
+        return self._dim_vals[item.value]
+
+    def __add__(self: T, other: T) -> T:
+        results = []
+        for a, b in zip(self, other):
+            results.append(a + b)
+        return type(self)(*results)
+
+    def __len__(self) -> int:
+        return self.ndim
+
+    def __contains__(self, item):
+        for val in self:
+            if val == item:
+                return True
+        return False
+
+
+class Point3D(NDPoint):
+
+    ndim = 3
+
+    def __init__(self, x: float, y: float, z: float):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    @property
+    def _dim_vals(self) -> Tuple[float, float, float]:
         return self.x, self.y, self.z
 
-    def get_2d_point(self, exclude_dim: Dim) -> Tuple[float, float]:
+    def get_2d_point(self, exclude_dim: Dim) -> Point2D:
         keep_dims = [self[d] for d in Dim if d != exclude_dim]
-        return tuple(*keep_dims)
+        return Point2D(*keep_dims)
+
+
+class Point2D(NDPoint):
+
+    ndim = 2
+
+    def __init__(self, i: float, j: float):
+        self.i = i
+        self.j = j
+
+    @property
+    def _dim_vals(self) -> Tuple[float, float]:
+        return self.i, self.j
