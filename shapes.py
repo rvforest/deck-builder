@@ -1,23 +1,24 @@
 from abc import abstractmethod
-from typing import List, Protocol
+from typing import Protocol
 
+from ezdxf.layouts import Modelspace
 import solid as s
 import solid.utils as su
 from solid.solidpython import OpenSCADObject
 
 from paths import trace_rectangle, trace_square, trace_isosceles_trapezoid
-from point import Dim, Point3D, Point2D
+from point import Dim, Point3D
 
 
 class Shape(Protocol):
     position: Point3D
 
     @abstractmethod
-    def get_2d_path(self, face: Dim) -> List[Point2D]:
+    def render_scad(self) -> OpenSCADObject:
         raise NotImplementedError
 
     @abstractmethod
-    def render_scad(self) -> OpenSCADObject:
+    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
         raise NotImplementedError
 
 
@@ -30,12 +31,17 @@ class Cuboid(Shape):
         self.lengths = (x_len, y_len, z_len)
         self.position = position
 
-    def get_2d_path(self, plane: Dim) -> List[Point2D]:
-        args = [self.lengths[d.value] for d in Dim if d != plane]
-        return trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
-
     def render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
+
+    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+        args = [self.lengths[d.value] for d in Dim if d != plane]
+        path = trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
+
+        dxfattrib = {}
+        if layer:
+            dxfattrib['layer'] = layer
+        msp.add_lwpolyline(path)
 
 
 class TrapezoidalPrism(Shape):
@@ -46,18 +52,23 @@ class TrapezoidalPrism(Shape):
         self.height = height
         self.position = position
 
-    def get_2d_path(self, plane: Dim) -> List[Point2D]:
+    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+
         if plane == Dim.Z:
             # Top is always parallel to ground
-            return trace_square(self.bottom_square_len, self.position.get_2d_point(plane))
+            path = trace_square(self.bottom_square_len, self.position.get_2d_point(plane))
         else:
             # Other two sides are identical
-            return trace_isosceles_trapezoid(
+            path = trace_isosceles_trapezoid(
                 self.bottom_square_len,
                 self.top_square_len,
                 self.height,
                 self.position.get_2d_point(plane)
             )
+        dxfattrib = {}
+        if layer:
+            dxfattrib['layer'] = layer
+        msp.add_lwpolyline(path)
 
     def render_scad(self):
         scale = self.top_square_len / self.bottom_square_len
