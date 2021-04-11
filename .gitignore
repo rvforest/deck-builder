@@ -3,3 +3,4 @@
 .idea
 *.dxf
 *.scad
+__pycache__
