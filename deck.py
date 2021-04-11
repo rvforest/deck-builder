@@ -3,23 +3,16 @@ import math
 import solid as s
 import solid.utils as su
 
+from lumber import LumberSize
 from util import ft
-
-ONE = 0.75
-TWO = 1.5
-FOUR = 3.5
-SIX = 5.5
-EIGHT = 7.25
-TEN = 9.25
-TWELVE = 11.25
 
 
 # southern pine
 joist_spans = {
-    SIX: ft(6) + 8,
-    EIGHT: ft(10) + 1,
-    TEN: ft(14),
-    TWELVE: ft(16) + 6
+    LumberSize.SIX: ft(6) + 8,
+    LumberSize.EIGHT: ft(10) + 1,
+    LumberSize.TEN: ft(14),
+    LumberSize.TWELVE: ft(16) + 6
 }
 
 
@@ -61,14 +54,14 @@ class Deck:
             width,
             length,
             height,
-            joist_thickness=SIX,
-            joist_width=TWO,
+            joist_thickness=LumberSize.SIX,
+            joist_width=LumberSize.TWO,
             max_spacing=16,
             joist_overhang=ft(2),
-            beam_thickness=EIGHT,
-            beam_width=FOUR,
+            beam_thickness=LumberSize.EIGHT,
+            beam_width=LumberSize.FOUR,
             beam_overhang=ft(2),
-            decking_thickness=ONE
+            decking_thickness=LumberSize.ONE
     ):
         self.width = width
         self.length = length
@@ -96,7 +89,7 @@ class Deck:
 
     @property
     def n_joists(self):
-        return n_members(self.width, lumber_width=TWO, max_span=self.max_spacing)
+        return n_members(self.width, lumber_width=LumberSize.TWO, max_span=self.max_spacing)
 
     @property
     def n_beams(self):
@@ -140,7 +133,7 @@ class Deck:
             for j in range(0, self.n_joists):
                 f += su.forward(row_position)(su.right(j * self.joist_spacing)(joist(self.joist_len)))
             row_position += self.joist_len + self.joist_width
-            f += su.forward(row_position - self.joist_width)(rim_joist(self.width))
+            f += su.forward(row_position - self.joist_width.value)(rim_joist(self.width))
 
         return su.up(self.beam_height)(f)
 
@@ -172,7 +165,7 @@ class DeckJoistsOnBlocks(Deck):
             for j in range(1, self.n_joists - 1):
                 b.append(
                     su.forward(i * self.beam_spacing + self.beam_overhang)(
-                        su.right(j * self.joist_spacing + TWO / 2)(deck_block)
+                        su.right(j * self.joist_spacing + LumberSize.TWO / 2)(deck_block)
                     )
                 )
         return su.up(self.beam_height - BLOCK_SLOT_HEIGHT)(sum(b))
@@ -186,9 +179,15 @@ BLOCK_SLOT_HEIGHT = 6
 BLOCK_BASE_LEN = 10.75
 BLOCK_TOP_LEN = 8
 deck_block = su.linear_extrude(height=BLOCK_HEIGHT, scale=BLOCK_TOP_LEN/BLOCK_BASE_LEN)(s.square(10.75, center=True)) \
-             - su.up(BLOCK_SLOT_HEIGHT + FOUR / 2)(s.cube([12, TWO, FOUR], center=True)) \
-             - su.up(BLOCK_SLOT_HEIGHT + FOUR / 2)(s.cube([TWO, 12, FOUR], center=True)) \
-             - su.up(BLOCK_SLOT_HEIGHT + 1)(s.cube([FOUR, FOUR, 2], center=True))
+     - su.up(BLOCK_SLOT_HEIGHT + LumberSize.FOUR.value / 2)(
+        s.cube([12, LumberSize.TWO, LumberSize.FOUR.value], center=True)
+     ) \
+     - su.up(BLOCK_SLOT_HEIGHT + LumberSize.FOUR.value / 2)(
+        s.cube([LumberSize.TWO, 12, LumberSize.FOUR.value], center=True)
+     ) \
+     - su.up(BLOCK_SLOT_HEIGHT + 1)(
+        s.cube([LumberSize.FOUR.value, LumberSize.FOUR.value, 2], center=True)
+     )
 
 
 ground_points = [
