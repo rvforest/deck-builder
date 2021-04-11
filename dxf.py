@@ -15,7 +15,8 @@ def draw_face(shapes: Iterable[Shape], face: Dim, msp: Modelspace, layer=None):
 
 
 if __name__ == '__main__':
-    from shapes import Cuboid, Point
+    from shapes import Cuboid
+    from point import Point3D
 
     doc = ezdxf.new(dxfversion='AC1024')
     modelspace = doc.modelspace()

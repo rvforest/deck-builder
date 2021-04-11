@@ -1,47 +1,31 @@
 from abc import abstractmethod
-from dataclasses import dataclass
-from itertools import product
-from typing import List, Tuple, Protocol
+from typing import List, Protocol
 
-from point import Dim, Point3D
-from utils import xor
+from paths import trace_rectangle, trace_square, trace_isosceles_trapezoid
+from point import Dim, Point3D, Point2D
 
 
 class Shape(Protocol):
-
     position: Point3D
 
     @abstractmethod
-    def get_path(self, face: str) -> List[Tuple[float, float, float]]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_2d_path(self, face: str) -> List[Tuple[float, float]]:
+    def get_2d_path(self, face: Dim) -> List[Point2D]:
         raise NotImplementedError
 
 
-@dataclass
 class Cuboid:
-    x_len: float
-    y_len: float
-    z_len: float
-    position: Point3D
 
-    @property
-    def bottom(self) -> List[Point3D]:
-        return self._side(z=self.position.z)
+    def __init__(self, x_len: float, y_len: float, z_len: float, position: Point3D):
+        self.x_len = x_len
+        self.y_len = y_len
+        self.z_len = z_len
+        self.lengths = (x_len, y_len, z_len)
+        self.position = position
 
-    @property
-    def top(self) -> List[Point3D]:
-        return self._side(z=self.z_len)
+    def get_2d_path(self, plane: Dim) -> List[Point2D]:
+        args = [self.lengths[d.value] for d in Dim if d != plane]
+        return trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
 
-    @property
-    def back(self) -> List[Point3D]:
-        return self._side(x=self.position.x)
-
-    @property
-    def front(self) -> List[Point3D]:
-        return self._side(x=self.x_len)
 
     @property
     def left(self) -> List[Point3D]:
@@ -87,7 +71,4 @@ class Cuboid:
 
 
 if __name__ == '__main__':
-    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).top)
-    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).bottom)
-    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).front)
-    print(Cuboid(2, 6, 120, Point3D(1, 1, 0)).get_path('bottom'))
+    pass
