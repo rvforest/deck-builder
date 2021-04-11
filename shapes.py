@@ -12,7 +12,7 @@ from point import Dim, Point3D
 
 
 class Shape(Protocol):
-    position: Point3D
+    position: Optional[Point3D]
     layer: Optional[str]
 
     @abstractmethod
@@ -30,12 +30,12 @@ class Shape(Protocol):
 
 class Cuboid(Shape):
 
-    def __init__(self, x_len: float, y_len: float, z_len: float, position: Point3D, layer: str = None):
+    def __init__(self, x_len: float, y_len: float, z_len: float, position: Optional[Point3D] = None, layer: str = None):
         self.x_len = x_len
         self.y_len = y_len
         self.z_len = z_len
         self.lengths = (x_len, y_len, z_len)
-        self.position = position
+        self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
 
     def render_scad(self):
@@ -61,13 +61,13 @@ class TrapezoidalPrism(Shape):
             bottom_square_len: float,
             top_square_len: float,
             height: float,
-            position: Point3D,
+            position: Optional[Point3D] = None,
             layer: str = None
     ):
         self.top_square_len = top_square_len
         self.bottom_square_len = bottom_square_len
         self.height = height
-        self.position = position
+        self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
