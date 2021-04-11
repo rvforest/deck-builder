@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Protocol
+from typing import Optional, Protocol
 
 from ezdxf.layouts import Modelspace
 import solid as s
@@ -12,47 +12,57 @@ from point import Dim, Point3D
 
 class Shape(Protocol):
     position: Point3D
+    layer: Optional[str]
 
     @abstractmethod
     def render_scad(self) -> OpenSCADObject:
         raise NotImplementedError
 
     @abstractmethod
-    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+    def render_dxf(self, plane: Dim, msp: Modelspace):
         raise NotImplementedError
 
 
 class Cuboid(Shape):
 
-    def __init__(self, x_len: float, y_len: float, z_len: float, position: Point3D):
+    def __init__(self, x_len: float, y_len: float, z_len: float, position: Point3D, layer: str = None):
         self.x_len = x_len
         self.y_len = y_len
         self.z_len = z_len
         self.lengths = (x_len, y_len, z_len)
         self.position = position
+        self.layer = layer
 
     def render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
 
-    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+    def render_dxf(self, plane: Dim, msp: Modelspace):
         args = [self.lengths[d.value] for d in Dim if d != plane]
         path = trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
 
         dxfattrib = {}
-        if layer:
-            dxfattrib['layer'] = layer
-        msp.add_lwpolyline(path)
+        if self.layer:
+            dxfattrib['layer'] = self.layer
+        msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
 
 class TrapezoidalPrism(Shape):
 
-    def __init__(self, bottom_square_len: float, top_square_len: float, height: float, position: Point3D):
+    def __init__(
+            self,
+            bottom_square_len: float,
+            top_square_len: float,
+            height: float,
+            position: Point3D,
+            layer: str = None
+    ):
         self.top_square_len = top_square_len
         self.bottom_square_len = bottom_square_len
         self.height = height
         self.position = position
+        self.layer = layer
 
-    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+    def render_dxf(self, plane: Dim, msp: Modelspace):
 
         if plane == Dim.Z:
             # Top is always parallel to ground
@@ -66,9 +76,9 @@ class TrapezoidalPrism(Shape):
                 self.position.get_2d_point(plane)
             )
         dxfattrib = {}
-        if layer:
-            dxfattrib['layer'] = layer
-        msp.add_lwpolyline(path)
+        if self.layer:
+            dxfattrib['layer'] = self.layer
+        msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
     def render_scad(self):
         scale = self.top_square_len / self.bottom_square_len
