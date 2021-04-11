@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol
 
@@ -22,6 +23,10 @@ class Shape(Protocol):
     def render_dxf(self, plane: Dim, msp: Modelspace):
         raise NotImplementedError
 
+    @abstractmethod
+    def translate(self, x: float, y: float, z: float) -> Shape:
+        raise NotImplementedError
+
 
 class Cuboid(Shape):
 
@@ -44,6 +49,9 @@ class Cuboid(Shape):
         if self.layer:
             dxfattrib['layer'] = self.layer
         msp.add_lwpolyline(path, dxfattribs=dxfattrib)
+
+    def translate(self, x: float, y: float, z: float) -> Cuboid:
+        return Cuboid(self.x_len, self.y_len, self.z_len, position=self.position + Point3D(x, y, z), layer=self.layer)
 
 
 class TrapezoidalPrism(Shape):
@@ -87,6 +95,14 @@ class TrapezoidalPrism(Shape):
             su.linear_extrude(height=self.height, scale=scale)(
                 s.square(self.bottom_square_len)
             )
+        )
+
+    def translate(self, x: float, y: float, z: float) -> TrapezoidalPrism:
+        return TrapezoidalPrism(
+            self.bottom_square_len,
+            self.top_square_len,
+            self.height,
+            position=self.position + Point3D(x, y, z), layer=self.layer
         )
 
 
