@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import Optional, Protocol
+from typing import Optional, Protocol, List
 
 from ezdxf.layouts import Modelspace
 import solid as s
@@ -104,6 +104,37 @@ class TrapezoidalPrism(Shape):
             self.height,
             position=self.position + Point3D(x, y, z), layer=self.layer
         )
+
+
+class ShapeCollection:
+
+    def __init__(self, shapes: Optional[List[Shape]] = None):
+        if shapes is None:
+            self._shapes = []
+        else:
+            self._shapes = shapes
+
+    def __len__(self):
+        return len(self._shapes)
+
+    def __getitem__(self, item):
+        return self._shapes[item]
+
+    def __contains__(self, item):
+        return self._shapes.__contains__(item)
+
+    def append(self, item: Shape):
+        self._shapes.append(item)
+
+    def translate(self, amt: Point3D) -> ShapeCollection:
+        return ShapeCollection([shape.translate(amt) for shape in self])
+
+    def render_dxf(self, plane: Dim, msp: Modelspace):
+        for shape in self:
+            shape.render_dxf(plane, msp)
+
+    def render_scad(self):
+        return sum([shape.render_scad() for shape in self])
 
 
 if __name__ == '__main__':
