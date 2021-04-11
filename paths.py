@@ -23,6 +23,10 @@ def trace_rectangle(width: float, length: float, position: Point2D) -> List[Poin
     return [position + p for p in rel_path]
 
 
+def trace_square(side_len: float, position: Point2D):
+    return trace_rectangle(side_len, side_len, position)
+
+
 def trace_isosceles_trapezoid(
         bottom_len: float,
         top_len: float,
