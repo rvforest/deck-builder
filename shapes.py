@@ -13,7 +13,8 @@ class Shape(Protocol):
         raise NotImplementedError
 
 
-class Cuboid:
+
+class Cuboid(Shape):
 
     def __init__(self, x_len: float, y_len: float, z_len: float, position: Point3D):
         self.x_len = x_len
@@ -27,7 +28,7 @@ class Cuboid:
         return trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
 
 
-class TrapezoidalPrism:
+class TrapezoidalPrism(Shape):
 
     def __init__(self, bottom_square_len: float, top_square_len: float, height: float, position: Point3D):
         self.top_square_len = top_square_len
