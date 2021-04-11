@@ -14,6 +14,7 @@ from point import Dim, Point3D
 class Shape(Protocol):
     position: Optional[Point3D]
     layer: Optional[str]
+    height: float
 
     @abstractmethod
     def render_scad(self) -> OpenSCADObject:
@@ -37,6 +38,8 @@ class Cuboid(Shape):
         self.lengths = (x_len, y_len, z_len)
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
+
+        self.height = self.z_len
 
     def render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
