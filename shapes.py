@@ -123,6 +123,9 @@ class ShapeCollection:
     def __contains__(self, item):
         return self._shapes.__contains__(item)
 
+    def __add__(self, other: ShapeCollection) -> ShapeCollection:
+        return ShapeCollection(self._shapes + other._shapes)
+
     def append(self, item: Shape):
         self._shapes.append(item)
 
