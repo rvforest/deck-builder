@@ -65,7 +65,7 @@ class PredefinedLumber(Lumber):
         raise NotImplementedError
 
 
-def lumber_factory(name: str, width: float, height: float) -> Type[Lumber]:
+def lumber_factory(name: str, width: float, height: float) -> Type[PredefinedLumber]:
     def __init__(self, length: float, position: Optional[Point3D] = None, layer: Optional[str] = None, orient_towards: Dim = Dim.X):
         Lumber.__init__(self, width, height, length, position, layer, orient_towards)
     newclass = type(name, (PredefinedLumber,), {'__init__': __init__})
