@@ -83,7 +83,7 @@ class TrapezoidalPrism(Shape):
     def render_scad(self):
         scale = self.top_square_len / self.bottom_square_len
         # noinspection PyTypeChecker
-        su.translate(tuple(self.position))(
+        return su.translate(tuple(self.position))(
             su.linear_extrude(height=self.height, scale=scale)(
                 s.square(self.bottom_square_len)
             )
