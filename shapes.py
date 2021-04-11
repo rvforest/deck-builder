@@ -1,6 +1,10 @@
 from abc import abstractmethod
 from typing import List, Protocol
 
+import solid as s
+import solid.utils as su
+from solid.solidpython import OpenSCADObject
+
 from paths import trace_rectangle, trace_square, trace_isosceles_trapezoid
 from point import Dim, Point3D, Point2D
 
@@ -12,6 +16,9 @@ class Shape(Protocol):
     def get_2d_path(self, face: Dim) -> List[Point2D]:
         raise NotImplementedError
 
+    @abstractmethod
+    def render_scad(self) -> OpenSCADObject:
+        raise NotImplementedError
 
 
 class Cuboid(Shape):
@@ -26,6 +33,9 @@ class Cuboid(Shape):
     def get_2d_path(self, plane: Dim) -> List[Point2D]:
         args = [self.lengths[d.value] for d in Dim if d != plane]
         return trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
+
+    def render_scad(self):
+        return su.translate(tuple(self.position))(s.cube(self.lengths))
 
 
 class TrapezoidalPrism(Shape):
@@ -48,6 +58,14 @@ class TrapezoidalPrism(Shape):
                 self.height,
                 self.position.get_2d_point(plane)
             )
+
+    def render_scad(self):
+        scale = self.top_square_len / self.bottom_square_len
+        su.translate(tuple(self.position))(
+            su.linear_extrude(height=self.height, scale=scale)(
+                s.square(self.bottom_square_len)
+            )
+        )
 
 
 if __name__ == '__main__':
