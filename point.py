@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Tuple, TypeVar
+from typing import Tuple, TypeVar, Union
 
 T = TypeVar('T')
 
@@ -24,8 +24,10 @@ class NDPoint:
     def __iter__(self) -> float:
         yield from self._dim_vals
 
-    def __getitem__(self, item: Dim) -> float:
-        return self._dim_vals[item.value]
+    def __getitem__(self, item: Union[int, Dim]) -> float:
+        if isinstance(item, Dim):
+            item = item.value
+        return self._dim_vals[item]
 
     def __add__(self: T, other: T) -> T:
         if self.ndim != other.ndim:
