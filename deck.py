@@ -3,6 +3,8 @@ import math
 import solid as s
 import solid.utils as su
 
+from util import ft
+
 ONE = 0.75
 TWO = 1.5
 FOUR = 3.5
@@ -10,10 +12,6 @@ SIX = 5.5
 EIGHT = 7.25
 TEN = 9.25
 TWELVE = 11.25
-
-
-def ft(f):
-    return 12 * f
 
 
 # southern pine
