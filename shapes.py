@@ -126,8 +126,8 @@ class ShapeCollection:
     def append(self, item: Shape):
         self._shapes.append(item)
 
-    def translate(self, amt: Point3D) -> ShapeCollection:
-        return ShapeCollection([shape.translate(amt) for shape in self])
+    def translate(self, x: float, y: float, z: float) -> ShapeCollection:
+        return ShapeCollection([shape.translate(x, y, z) for shape in self])
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
         for shape in self:
