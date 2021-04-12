@@ -53,7 +53,7 @@ def trace_isosceles_trapezoid(
     rel_path = [
         Point2D(0, 0),
         Point2D(bottom_len, 0),
-        Point2D((bottom_len - top_len) / 2 + bottom_len, height),
+        Point2D(bottom_len - (bottom_len - top_len) / 2, height),
         Point2D((bottom_len - top_len) / 2, height),
         Point2D(0, 0)
     ]
