@@ -4,13 +4,14 @@ from typing import List
 from point import Point2D
 
 
-def trace_rectangle(width: float, length: float, position: Point2D) -> List[Point2D]:
+def trace_rectangle(width: float, length: float, position: Point2D, center: bool = False) -> List[Point2D]:
     """
     Get points of rectangle in order of path.
 
     :param width: Width of rectangle
     :param length: Length of rectangle
     :param position: Position of bottom left corner
+    :param center: Is position based on center of object?
     :return:
     """
     rel_path = [
@@ -20,18 +21,24 @@ def trace_rectangle(width: float, length: float, position: Point2D) -> List[Poin
         Point2D(0, length),
         Point2D(0, 0)
     ]
-    return [position + p for p in rel_path]
+    if center:
+        adj = Point2D(width / 2, length / 2)
+    else:
+        adj = Point2D(0, 0)
+    result = [position + p - adj for p in rel_path]
+    return result
 
 
-def trace_square(side_len: float, position: Point2D):
-    return trace_rectangle(side_len, side_len, position)
+def trace_square(side_len: float, position: Point2D, center: bool = False):
+    return trace_rectangle(side_len, side_len, position, center)
 
 
 def trace_isosceles_trapezoid(
         bottom_len: float,
         top_len: float,
         height: float,
-        position: Point2D
+        position: Point2D,
+        center: bool = False
 ) -> List[Point2D]:
     """
     Get points of isosceles trapezoid  in order of path. Parallel sides are top and bottom.
@@ -40,6 +47,7 @@ def trace_isosceles_trapezoid(
     :param top_len: Length of top side
     :param height: Height of trapezoid
     :param position: Position of bottom left corner
+    :param center: Is position based on center of object?
     :return:
     """
     rel_path = [
@@ -49,4 +57,8 @@ def trace_isosceles_trapezoid(
         Point2D((bottom_len - top_len) / 2, height),
         Point2D(0, 0)
     ]
-    return [position + p for p in rel_path]
+    if center:
+        adj = Point2D(bottom_len / 2, height / 2)
+    else:
+        adj = Point2D(0, 0)
+    return [position + p - adj for p in rel_path]

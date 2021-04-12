@@ -64,12 +64,14 @@ class TrapezoidalPrism(Shape):
             bottom_square_len: float,
             top_square_len: float,
             height: float,
+            center: bool = True,
             position: Optional[Point3D] = None,
             layer: str = None
     ):
         self.top_square_len = top_square_len
         self.bottom_square_len = bottom_square_len
         self.height = height
+        self.center = center
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
 
@@ -77,14 +79,15 @@ class TrapezoidalPrism(Shape):
 
         if plane == Dim.Z:
             # Top is always parallel to ground
-            path = trace_square(self.bottom_square_len, self.position.get_2d_point(plane))
+            path = trace_square(self.bottom_square_len, self.position.get_2d_point(plane), self.center)
         else:
             # Other two sides are identical
             path = trace_isosceles_trapezoid(
                 self.bottom_square_len,
                 self.top_square_len,
                 self.height,
-                self.position.get_2d_point(plane)
+                self.position.get_2d_point(plane),
+                self.center
             )
         dxfattrib = {}
         if self.layer:
@@ -96,7 +99,7 @@ class TrapezoidalPrism(Shape):
         # noinspection PyTypeChecker
         return su.translate(tuple(self.position))(
             su.linear_extrude(height=self.height, scale=scale)(
-                s.square(self.bottom_square_len)
+                s.square(self.bottom_square_len, center=self.center)
             )
         )
 
