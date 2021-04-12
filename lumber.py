@@ -51,25 +51,19 @@ class Lumber(Cuboid):
             msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
 
 
-class PredefinedLumber(Lumber):
-    width: float
-    height: float
+class LumberFactory:
+    def __init__(self, width: float, height: float):
+        self.width = width
+        self.height = height
 
-    def __init__(
+    def __call__(
             self,
             length: float,
             position: Optional[Point3D] = None,
             layer: Optional[str] = None,
             orient_towards: Dim = Dim.X
-    ):
-        raise NotImplementedError
-
-
-def lumber_factory(name: str, width: float, height: float) -> Type[PredefinedLumber]:
-    def __init__(self, length: float, position: Optional[Point3D] = None, layer: Optional[str] = None, orient_towards: Dim = Dim.X):
-        Lumber.__init__(self, width, height, length, position, layer, orient_towards)
-    newclass = type(name, (PredefinedLumber,), {'__init__': __init__})
-    return newclass
+    ) -> Lumber:
+        return Lumber(self.width, self.height, length, position, layer, orient_towards)
 
 
 if __name__ == '__main__':
@@ -78,7 +72,7 @@ if __name__ == '__main__':
     doc = ezdxf.new(dxfversion='AC1024')
     modelspace = doc.modelspace()
 
-    TwoBySix = lumber_factory("TwoBySix", LumberSize.TWO.value, LumberSize.SIX.value)
+    TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
     boards = [
         TwoBySix(ft(10), Point3D(0, 0, 0))
     ]
