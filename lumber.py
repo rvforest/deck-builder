@@ -1,5 +1,6 @@
+from __future__ import annotations
 from enum import Enum
-from typing import Type, Optional
+from typing import Optional
 
 from ezdxf.layouts import Modelspace
 
@@ -49,6 +50,16 @@ class Lumber(Cuboid):
         if plane == self.orient_towards:
             msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
             msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
+
+    def translate(self, x: float, y: float, z: float) -> Lumber:
+        return Lumber(
+            self.width,
+            self.height,
+            self.length,
+            position=self.position + Point3D(x, y, z),
+            orient_towards=self.orient_towards,
+            layer=self.layer
+        )
 
 
 class LumberFactory:
