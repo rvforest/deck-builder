@@ -1,41 +1,23 @@
+from __future__ import annotations
 import math
+from typing import Optional, Dict
 
 import solid as s
 import solid.utils as su
 
-from lumber import LumberSize
-from util import ft
+from lumber import LumberSize, LumberFactory
+from point import Point3D
+from shapes import Dim, Shape, ShapeCollection, TrapezoidalPrism
+from util import ft, write_dxf_doc
 
 
 # southern pine
-joist_spans = {
-    LumberSize.SIX: ft(6) + 8,
-    LumberSize.EIGHT: ft(10) + 1,
-    LumberSize.TEN: ft(14),
-    LumberSize.TWELVE: ft(16) + 6
+joist_spans: Dict[float, float] = {
+    LumberSize.SIX.value: ft(6) + 8,
+    LumberSize.EIGHT.value: ft(10) + 1,
+    LumberSize.TEN.value: ft(14),
+    LumberSize.TWELVE.value: ft(16) + 6
 }
-
-
-def lumber(h, w, orient_towards='x'):
-    """
-    Lumber factory function
-    :param orient_towards:
-    :param h:
-    :param w:
-
-    """
-    if orient_towards not in ('x', 'y', 'z'):
-        raise ValueError("Invalid argument `orient_towards`. Value must be one of 'x', 'y', or 'z'")
-
-    def inner(length):
-        x, y, z = length, h, w
-        if orient_towards == 'y':
-            x, y = y, x
-        elif orient_towards == 'z':
-            x, z = z, x
-        return s.cube([x, y, z])
-
-    return inner
 
 
 def n_members(length, lumber_width, max_span):
@@ -51,29 +33,27 @@ class Deck:
 
     def __init__(
             self,
-            width,
-            length,
-            height,
-            joist_thickness=LumberSize.SIX,
-            joist_width=LumberSize.TWO,
-            max_spacing=16,
-            joist_overhang=ft(2),
-            beam_thickness=LumberSize.EIGHT,
-            beam_width=LumberSize.FOUR,
-            beam_overhang=ft(2),
-            decking_thickness=LumberSize.ONE
+            width: float,
+            length: float,
+            height: float,
+            beam_class: LumberFactory,
+            joist_class: LumberFactory,
+            decking_class: LumberFactory,
+            footing_class: FootingFactory,
+            max_spacing: float = 16,
+            joist_overhang: float = ft(2),
+            beam_overhang: float = ft(2),
     ):
         self.width = width
         self.length = length
         self.height = height
-        self.joist_thickness = joist_thickness
-        self.joist_width = joist_width
+        self.beam_class = beam_class
+        self.joist_class = joist_class
+        self.decking_class = decking_class
+        self.footing_class = footing_class
         self.max_spacing = max_spacing
         self.joist_overhang = joist_overhang
-        self.beam_thickness = beam_thickness
-        self.beam_width = beam_width
         self.beam_overhang = beam_overhang
-        self.decking_thickness = decking_thickness
 
     @property
     def n_joist_spans(self):
@@ -89,11 +69,11 @@ class Deck:
 
     @property
     def n_joists(self):
-        return n_members(self.width, lumber_width=LumberSize.TWO, max_span=self.max_spacing)
+        return n_members(self.width, lumber_width=LumberSize.TWO.value, max_span=self.max_spacing)
 
     @property
     def n_beams(self):
-        return n_members(self.inner_length, self.beam_width, max_span=joist_spans[self.joist_thickness])
+        return n_members(self.inner_length, self.beam_class.width, max_span=joist_spans[self.joist_class.height])
 
     @property
     def inner_length(self):
@@ -102,44 +82,54 @@ class Deck:
     @property
     def joist_spacing(self):
         """Amount of space between joists."""
-        return oc_spacing(self.width, self.joist_width, self.n_joists)
+        return oc_spacing(self.width, self.joist_class.width, self.n_joists)
 
     @property
     def beam_spacing(self):
         """Amount of space between joists."""
-        return oc_spacing(self.inner_length, self.beam_width, self.n_beams)
+        return oc_spacing(self.inner_length, self.beam_class.width, self.n_beams)
 
     @property
     def frame_height(self):
-        return self.height - self.decking_thickness
+        return self.height - self.decking_class.height
 
     @property
     def beam_height(self):
-        return self.frame_height - self.joist_thickness
+        return self.frame_height - self.joist_class.height
 
     @property
     def post_height(self):
-        return self.beam_height - self.beam_thickness
+        return self.beam_height - self.beam_class.height
 
     def footings(self):
         raise NotImplementedError
 
     def frame(self):
-        rim_joist = lumber(self.joist_width, self.joist_thickness)
-        joist = lumber(self.joist_width, self.joist_thickness, orient_towards='y')
-        f = rim_joist(self.width)
+        joist = self.joist_class
+
+        # Set rim joist
+        # Joists face Y direction and rim joists face X direction
+        f = ShapeCollection()
+        f.append(joist(self.width, orient_towards=Dim.X))
+
+        # Set joists
         row_position = self.row_offset
         for i in range(self.n_joist_spans):
             for j in range(0, self.n_joists):
-                f += su.forward(row_position)(su.right(j * self.joist_spacing)(joist(self.joist_len)))
-            row_position += self.joist_len + self.joist_width
-            f += su.forward(row_position - self.joist_width.value)(rim_joist(self.width))
+                f.append(joist(self.joist_len, orient_towards=Dim.Y).translate(
+                    j * self.joist_spacing,
+                    row_position,
+                    0
+                ))
+            row_position += self.joist_len + self.joist_class.width
+            f.append(joist(self.width).translate(0, row_position - self.joist_class.width, 0))
 
-        return su.up(self.beam_height)(f)
+        return f.translate(0, 0, self.beam_height)
 
-    def planking(self):
-        plank = s.cube([20 * 12, 5.5, .75])
-        return su.up(self.frame_height)(plank)
+    def decking(self):
+        return ShapeCollection([
+            self.decking_class(ft(20)).translate(0, 0, self.frame_height)
+        ])
 
 
 class FlushBeamDeck(Deck):
@@ -154,40 +144,64 @@ class FlushBeamDeck(Deck):
 
     @property
     def row_offset(self):
-        return self.beam_width
+        return self.beam_class.width
+
+    def footings(self):
+        pass
 
 
 class DeckJoistsOnBlocks(Deck):
 
     def footings(self):
-        b = []
+        b = ShapeCollection()
         for i in range(self.n_beams):
             for j in range(1, self.n_joists - 1):
                 b.append(
-                    su.forward(i * self.beam_spacing + self.beam_overhang)(
-                        su.right(j * self.joist_spacing + LumberSize.TWO / 2)(deck_block)
+                    self.footing_class().translate(
+                        j * self.joist_spacing + LumberSize.TWO.value / 2,
+                        i * self.beam_spacing + self.beam_overhang,
+                        0
                     )
                 )
-        return su.up(self.beam_height - BLOCK_SLOT_HEIGHT)(sum(b))
+        return b.translate(0, 0, self.beam_height - self.footing_class.height)
 
     def all(self):
-        return self.frame() + self.footings() + self.planking()
+        return self.frame() + self.footings() + self.decking()
 
 
-BLOCK_HEIGHT = 7.75
-BLOCK_SLOT_HEIGHT = 6
-BLOCK_BASE_LEN = 10.75
-BLOCK_TOP_LEN = 8
-deck_block = su.linear_extrude(height=BLOCK_HEIGHT, scale=BLOCK_TOP_LEN/BLOCK_BASE_LEN)(s.square(10.75, center=True)) \
-     - su.up(BLOCK_SLOT_HEIGHT + LumberSize.FOUR.value / 2)(
-        s.cube([12, LumberSize.TWO, LumberSize.FOUR.value], center=True)
-     ) \
-     - su.up(BLOCK_SLOT_HEIGHT + LumberSize.FOUR.value / 2)(
-        s.cube([LumberSize.TWO, 12, LumberSize.FOUR.value], center=True)
-     ) \
-     - su.up(BLOCK_SLOT_HEIGHT + 1)(
-        s.cube([LumberSize.FOUR.value, LumberSize.FOUR.value, 2], center=True)
-     )
+class FootingFactory:
+
+    height: float
+
+    def __call__(self, position: Optional[Point3D] = None, layer: Optional[str] = None) -> Shape:
+        raise NotImplementedError
+
+
+class DeckBlockFactory(FootingFactory):
+
+    def __init__(
+            self,
+            block_height: float = 7.75,
+            block_slot_height: float = 6,
+            block_base_len: float = 10.75,
+            block_top_len: float = 8,
+    ):
+        self.block_height = block_height
+        self.block_slot_height = block_slot_height
+        self.block_base_len = block_base_len
+        self.block_top_len = block_top_len
+
+        self.height = block_slot_height
+        self.block_scale = self.block_top_len / self.block_base_len
+
+    def __call__(self, position: Optional[Point3D] = None, layer: Optional[str] = None) -> TrapezoidalPrism:
+        return TrapezoidalPrism(
+            bottom_square_len=self.block_base_len,
+            top_square_len=self.block_top_len,
+            height=self.block_height,
+            position=position,
+            layer=layer
+        )
 
 
 ground_points = [
@@ -205,6 +219,7 @@ ground_faces = [
     [3, 2, 4],
     [2, 0, 4]
 ]
+# noinspection PyTypeChecker
 ground = s.polyhedron(ground_points, ground_faces)
 
 BLUE = (0.5, 0.5, 1)
@@ -231,5 +246,17 @@ house = su.difference()(
 
 
 if __name__ == '__main__':
-    d = DeckJoistsOnBlocks(ft(16), ft(16), 8)
-    s.scad_render_to_file(ground + house + d.all(), 'foo.scad')
+    TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
+    d = DeckJoistsOnBlocks(
+        width=ft(16),
+        length=ft(16),
+        height=8,
+        beam_class=TwoBySix,
+        joist_class=TwoBySix,
+        decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
+        footing_class=DeckBlockFactory()
+    )
+    s.scad_render_to_file(ground + house + d.all().render_scad(), 'foo.scad')
+    write_dxf_doc(d.all(), Dim.Z, 'foo_top.dxf')
+    write_dxf_doc(d.all(), Dim.Y, 'foo_front.dxf')
+    write_dxf_doc(d.all(), Dim.X, 'foo_side.dxf')
