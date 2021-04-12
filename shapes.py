@@ -8,7 +8,7 @@ import solid.utils as su
 from solid.solidpython import OpenSCADObject
 
 from paths import trace_rectangle, trace_square, trace_isosceles_trapezoid
-from point import Dim, Point3D
+from point import Dim, Point2D, Point3D
 
 
 class Shape(Protocol):
@@ -82,11 +82,13 @@ class TrapezoidalPrism(Shape):
             path = trace_square(self.bottom_square_len, self.position.get_2d_point(plane), self.center)
         else:
             # Other two sides are identical
+            # Adjust so that height is not centered
+            position_2d = self.position.get_2d_point(plane) + Point2D(0, self.height / 2)
             path = trace_isosceles_trapezoid(
                 self.bottom_square_len,
                 self.top_square_len,
                 self.height,
-                self.position.get_2d_point(plane),
+                position_2d,
                 self.center
             )
         dxfattrib = {}
