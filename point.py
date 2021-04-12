@@ -40,6 +40,17 @@ class NDPoint:
             results.append(a + b)
         return type(self)(*results)
 
+    def __sub__(self: T, other: T) -> T:
+        if self.ndim != other.ndim:
+            raise ValueError(
+                f"Points must be of the same dimension for subtraction. "
+                f"Left point is dim {self.ndim} and right point is dim {other.ndim}"
+            )
+        results = []
+        for a, b in zip(self, other):
+            results.append(a - b)
+        return type(self)(*results)
+
     def __len__(self) -> int:
         return self.ndim
 
