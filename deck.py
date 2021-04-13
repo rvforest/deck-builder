@@ -2,12 +2,14 @@ from __future__ import annotations
 import math
 from typing import Optional, Dict
 
+from ezdxf.layouts import Modelspace
 import solid as s
 import solid.utils as su
+from solid.solidpython import OpenSCADObject
 
 from lumber import LumberSize, LumberFactory
 from point import Point3D
-from shapes import Dim, Shape, ShapeCollection, TrapezoidalPrism
+from shapes import Dim, Shape, ShapeCollection, TrapezoidalPrism, Cuboid
 from util import ft, write_dxf_doc
 
 
@@ -101,10 +103,10 @@ class Deck:
     def post_height(self):
         return self.beam_height - self.beam_class.height
 
-    def footings(self):
+    def footings(self) -> ShapeCollection:
         raise NotImplementedError
 
-    def frame(self):
+    def frame(self) -> ShapeCollection:
         joist = self.joist_class
 
         # Set rim joist
@@ -126,7 +128,7 @@ class Deck:
 
         return f.translate(0, 0, self.beam_height)
 
-    def decking(self):
+    def decking(self) -> ShapeCollection:
         return ShapeCollection([
             self.decking_class(ft(20)).translate(0, 0, self.frame_height)
         ])
@@ -166,7 +168,7 @@ class DeckJoistsOnBlocks(Deck):
         return b.translate(0, 0, self.beam_height - self.footing_class.height)
 
     def all(self):
-        return self.frame() + self.footings() + self.decking()
+        return self.frame() + self.footings() + self.decking() + ShapeCollection([Ground(), House()])
 
 
 class FootingFactory:
@@ -204,45 +206,83 @@ class DeckBlockFactory(FootingFactory):
         )
 
 
-ground_points = [
-    [0, 0, 0],
-    [20 * 12, 0, -3],
-    [0, 16 * 12, -3],
-    [20 * 12, 16 * 12, -3.5],
-    [10 * 12, 8 * 12, -3.5]
-]
-ground_faces = [
-    [0, 1, 2],
-    [1, 2, 3],
-    [0, 1, 4],
-    [1, 3, 4],
-    [3, 2, 4],
-    [2, 0, 4]
-]
-# noinspection PyTypeChecker
-ground = s.polyhedron(ground_points, ground_faces)
+class Ground(Shape):
 
-BLUE = (0.5, 0.5, 1)
-WALL_START = -120
-WALL_DECK_GAP = 1
-HOUSE_WALL_LEN = 40 * 12
-HOUSE_HEIGHT = 240
-WALL_THICKNESS = 12
-THRESHOLD_HEIGHT = 8
-GROUND_HEIGHT_AT_DOOR = -3.0
-DOOR_WIDTH = 36
-DOOR_START = 19.5 * 12 - DOOR_WIDTH  # Reference from NW corner of deck
-DOOR_HEIGHT = 80
-house = s.translate((WALL_START, -WALL_DECK_GAP - WALL_THICKNESS, -3))(
-        s.color(BLUE)(s.cube([HOUSE_WALL_LEN, WALL_THICKNESS, HOUSE_HEIGHT])),
-)
-# Add door
-house = su.difference()(
-    house,
-    s.translate((DOOR_START, -2 * WALL_THICKNESS, THRESHOLD_HEIGHT + GROUND_HEIGHT_AT_DOOR))(
-        s.cube([DOOR_WIDTH, 3 * WALL_THICKNESS, DOOR_HEIGHT])
-    )
-)
+    ground_points = [
+        [0, 0, 0],  # Ground at sliding door
+        [20 * 12, 0, -3],  # Ground at kitchen door
+        [0, 16 * 12, -3],  # Ground 16 ft out from sliding door
+        [20 * 12, 16 * 12, -3.5],  # Ground 16 ft out from kitchen door
+        [10 * 12, 8 * 12, -3.5]
+    ]
+    ground_faces = [
+        [0, 1, 2],
+        [1, 2, 3],
+        [0, 1, 4],
+        [1, 3, 4],
+        [3, 2, 4],
+        [2, 0, 4]
+    ]
+
+    def render_scad(self) -> OpenSCADObject:
+        # noinspection PyTypeChecker
+        return s.polyhedron(Ground.ground_points, Ground.ground_faces)
+
+    def render_dxf(self, plane: Dim, msp: Modelspace):
+        if plane == Dim.Z:
+            pass
+        elif plane == Dim.X:
+            msp.add_line(Ground.ground_points[0][1:], Ground.ground_points[2][1:])
+            msp.add_line(Ground.ground_points[1][1:], Ground.ground_points[3][1:])
+        elif plane == Dim.Y:
+            start = Ground.ground_points[0]
+            end = Ground.ground_points[1]
+            msp.add_line((start[0], start[-1]), (end[0], end[-1]))
+
+    def translate(self, x: float, y: float, z: float) -> Shape:
+        print('Warning: Ground cannot be moved. No change was made.')
+        return self
+
+
+class House(Cuboid):
+
+    BLUE = (0.5, 0.5, 1)
+    WALL_START = -120
+    WALL_DECK_GAP = 1
+    HOUSE_WALL_LEN = 40 * 12
+    HOUSE_HEIGHT = 240
+    WALL_THICKNESS = 12
+    THRESHOLD_HEIGHT = 8
+    GROUND_HEIGHT_AT_DOOR = -3.0
+    DOOR_WIDTH = 36
+    DOOR_START = 19.5 * 12 - DOOR_WIDTH  # Reference from NW corner of deck
+    DOOR_HEIGHT = 80
+
+    def __init__(self):
+        super().__init__(
+            self.HOUSE_WALL_LEN, self.WALL_THICKNESS, self.HOUSE_HEIGHT,
+            Point3D(self.WALL_START, -self.WALL_THICKNESS, -3)
+        )
+
+    def render_scad(self) -> OpenSCADObject:
+        house = super().render_scad()
+        house = s.color(self.BLUE)(house)
+        # Add door
+        house = su.difference()(
+            house,
+            s.translate((
+                self.DOOR_START,
+                -2 * self.WALL_THICKNESS,
+                self.THRESHOLD_HEIGHT + self.GROUND_HEIGHT_AT_DOOR
+            ))(s.cube([self.DOOR_WIDTH, 3 * self.WALL_THICKNESS, self.DOOR_HEIGHT]))
+        )
+        return house
+
+    def render_dxf(self, plane: Dim, msp: Modelspace):
+        if plane == Dim.Y:
+            pass
+        else:
+            super().render_dxf(plane, msp)
 
 
 if __name__ == '__main__':
@@ -256,7 +296,7 @@ if __name__ == '__main__':
         decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
         footing_class=DeckBlockFactory()
     )
-    s.scad_render_to_file(ground + house + d.all().render_scad(), 'foo.scad')
+    s.scad_render_to_file(Ground().render_scad() + House().render_scad() + d.all().render_scad(), 'foo.scad')
     write_dxf_doc(d.all(), Dim.Z, 'foo_top.dxf')
     write_dxf_doc(d.all(), Dim.Y, 'foo_front.dxf')
     write_dxf_doc(d.all(), Dim.X, 'foo_side.dxf')
