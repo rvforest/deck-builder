@@ -17,3 +17,6 @@ class FlushBeamDeck(Deck):
 
     def footings(self):
         pass
+
+    def all(self):
+        return self.frame()
