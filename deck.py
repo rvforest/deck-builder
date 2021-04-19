@@ -38,8 +38,8 @@ class Deck:
             decking_class: LumberFactory,
             footing_class: FootingFactory,
             max_spacing: float = 16,
-            joist_overhang: float = ft(2),
-            beam_overhang: float = ft(2),
+            joist_overhang: float = 16,
+            beam_overhang: float = 16,
     ):
         self.width = width
         self.length = length
