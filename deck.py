@@ -127,3 +127,6 @@ class Deck:
         return ShapeCollection([
             self.decking_class(ft(20)).translate(0, 0, self.frame_height)
         ])
+
+    def all(self):
+        raise NotImplementedError
