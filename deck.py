@@ -101,7 +101,7 @@ class Deck:
     def footings(self) -> ShapeCollection:
         raise NotImplementedError
 
-    def frame(self, include_far_rim_joist=True) -> ShapeCollection:
+    def frame(self, include_far_rim_joist=True, include_first_end_joist=True) -> ShapeCollection:
         joist = self.joist_class
 
         # Set rim joist
@@ -111,8 +111,11 @@ class Deck:
 
         # Set joists
         row_position = self.joist_y_start
+        joist_start = 0
+        if not include_first_end_joist:
+            joist_start += 1
         for i in range(self.n_joist_spans):
-            for j in range(0, self.n_joists):
+            for j in range(joist_start, self.n_joists):
                 f.append(joist(self.joist_len, orient_towards=Dim.Y).translate(
                     j * self.joist_spacing,
                     row_position,

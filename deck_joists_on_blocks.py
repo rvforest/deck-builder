@@ -67,13 +67,15 @@ class LDeckOnBlocks(Deck):
             beam_overhang=self.cutout_x
         )
 
-    def frame(self, include_far_rim_joist=True) -> ShapeCollection:
+    def frame(self, include_far_rim_joist=True, include_first_end_joist=True) -> ShapeCollection:
         f = self._section1.frame(
             include_far_rim_joist=False,
+            include_first_end_joist=include_first_end_joist
         )
 
         f += self._section2.frame(
             include_far_rim_joist=False,
+            include_first_end_joist=False
         ).translate(*self.section2_start)
 
         if include_far_rim_joist:
@@ -91,7 +93,7 @@ class LDeckOnBlocks(Deck):
         for i in range(self.n_beams):
             extra_blocks.append(
                 self.footing_class().translate(
-                    self.section1_width + LumberSize.TWO.value / 2,
+                    self.section1_width - LumberSize.TWO.value / 2,
                     self.cutout_y + i * self._section2.beam_spacing + self.beam_overhang,
                     0
                 )
