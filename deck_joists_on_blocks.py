@@ -13,7 +13,7 @@ class DeckJoistsOnBlocks(Deck):
                 b.append(
                     self.footing_class().translate(
                         j * self.joist_spacing + LumberSize.TWO.value / 2,
-                        i * self.beam_spacing + self.beam_overhang,
+                        i * self.beam_spacing + self.joist_overhang,
                         0
                     )
                 )
