@@ -58,11 +58,11 @@ class Deck:
 
     @property
     def joist_len(self):
-        return self.length
+        return self.length - 2 * self.joist_class.width
 
     @property
-    def row_offset(self):
-        return 0
+    def joist_y_start(self):
+        return self.joist_class.width
 
     @property
     def n_joists(self):
@@ -110,7 +110,7 @@ class Deck:
         f.append(joist(self.width, orient_towards=Dim.X))
 
         # Set joists
-        row_position = self.row_offset
+        row_position = self.joist_y_start
         for i in range(self.n_joist_spans):
             for j in range(0, self.n_joists):
                 f.append(joist(self.joist_len, orient_towards=Dim.Y).translate(
