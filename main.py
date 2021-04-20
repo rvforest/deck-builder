@@ -1,14 +1,27 @@
 import solid as s
 
 from deck import LumberFactory, LumberSize
-from deck_joists_on_blocks import DeckJoistsOnBlocks
+from deck_joists_on_blocks import DeckJoistsOnBlocks, LDeckOnBlocks
+from flush_beam_deck import FlushBeamDeck
 from footings import DeckBlockFactory
 from point import Dim
 from surroundings import Ground, House
 from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
-d = DeckJoistsOnBlocks(
+d = LDeckOnBlocks(
+    width=234,
+    length=ft(16),
+    height=8,
+    beam_class=TwoBySix,
+    joist_class=TwoBySix,
+    decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
+    footing_class=DeckBlockFactory(),
+    cutout_x=ft(3.5),
+    cutout_y=ft(5)
+)
+
+d2 = FlushBeamDeck(
     width=ft(16),
     length=ft(16),
     height=8,

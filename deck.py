@@ -101,7 +101,7 @@ class Deck:
     def footings(self) -> ShapeCollection:
         raise NotImplementedError
 
-    def frame(self) -> ShapeCollection:
+    def frame(self, include_far_rim_joist=True) -> ShapeCollection:
         joist = self.joist_class
 
         # Set rim joist
@@ -119,6 +119,8 @@ class Deck:
                     0
                 ))
             row_position += self.joist_len + self.joist_class.width
+
+        if include_far_rim_joist:
             f.append(joist(self.width).translate(0, row_position - self.joist_class.width, 0))
 
         return f.translate(0, 0, self.beam_height)

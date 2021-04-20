@@ -64,16 +64,45 @@ class LDeckOnBlocks(Deck):
             footing_class=self.footing_class,
             max_spacing=self.max_spacing,
             joist_overhang=self.joist_overhang,
-            beam_overhang=self.beam_overhang
+            beam_overhang=self.cutout_x
         )
 
-    def frame(self) -> ShapeCollection:
-        return self._section1.frame() + self._section2.frame().translate(*self.section2_start)
+    def frame(self, include_far_rim_joist=True) -> ShapeCollection:
+        f = self._section1.frame(
+            include_far_rim_joist=False,
+        )
+
+        f += self._section2.frame(
+            include_far_rim_joist=False,
+        ).translate(*self.section2_start)
+
+        if include_far_rim_joist:
+            f.append(
+                self.joist_class(self.width).translate(
+                    0,
+                    self.length - self.joist_class.width,
+                    self.beam_height
+                )
+            )
+        return f
 
     def footings(self) -> ShapeCollection:
-        return self._section1.footings() + self._section2.footings().translate(*self.section2_start)
+        extra_blocks = ShapeCollection()
+        for i in range(self.n_beams):
+            extra_blocks.append(
+                self.footing_class().translate(
+                    self.section1_width + LumberSize.TWO.value / 2,
+                    self.cutout_y + i * self._section2.beam_spacing + self.beam_overhang,
+                    0
+                )
+            )
+        extra_blocks = extra_blocks.translate(0, 0, self.beam_height - self.footing_class.height)
+
+        return (
+            self._section1.footings()
+            + self._section2.footings().translate(*self.section2_start)
+            + extra_blocks
+        )
 
     def all(self) -> ShapeCollection:
         return self.frame() + self.footings()
-
-
