@@ -1,59 +1,89 @@
 from deck import Deck
-from frame import Frame, SingleSpanFrame
+from frame import SingleSpanFrame
 from point import Point3D, Dim
 from surroundings import Ground, House
-from lumber import LumberSize, LumberFactory
+from lumber import LumberSize
 from shapes import ShapeCollection
-from util import even_spacing
 
 
 class DeckBlockFrame(SingleSpanFrame):
 
-    def __init__(self, *args, block_overhang, **kwargs):
+    def __init__(
+            self,
+            *args,
+            block_overhang1,
+            block_overhang2,
+            include_rim_joist=(True, True),
+            include_end_joist=(True, True),
+            loc: Point3D = Point3D(0, 0, 0),
+            **kwargs
+    ):
+        self.true_include_rim_joist = include_rim_joist
+        self.true_include_end_joist = include_end_joist
+        self.true_loc = loc
+        kwargs['include_rim_joist'] = (False, False)
+        ej1 = ej2 = True
+        if (block_overhang1 == 0) and (not include_end_joist[0]):
+            ej1 = False
+        if (block_overhang2 == 0) and (not include_end_joist[1]):
+            ej2 = False
+        kwargs['include_end_joist'] = (ej1, ej2)
+        kwargs['loc'] = Point3D(block_overhang1, 0, 0) + loc
         try:
             width = kwargs.pop('width')
         except KeyError:
             width = args[0]
             args = args[1:]
-        self.block_overhang = block_overhang
-        super().__init__(width - 2 * block_overhang, *args, **kwargs)
+        self.block_overhang1 = block_overhang1
+        self.block_overhang2 = block_overhang2
+        super().__init__(width - block_overhang1 - block_overhang2, *args, **kwargs)
         self.true_width = width
 
     def shape(self) -> ShapeCollection:
         s = super().shape()
-        s += ShapeCollection([
-            self.joist_class(self.true_width, orient_towards=Dim.X),
-            self.joist_class(
-                self.true_width,
-                orient_towards=Dim.X,
-                position=Point3D(0, self.length - self.joist_class.width, 0)
-            ),
-            self.joist_class(self.length, orient_towards=Dim.Y),
-            self.joist_class(self.length, orient_towards=Dim.Y).translate(
-                x=self.true_width - self.joist_class.width,
-                y=0,
-                z=0
-            ),
-        ])
+        if self.true_include_rim_joist[0]:
+            s += ShapeCollection([self.joist_class(self.true_width, orient_towards=Dim.X).translate(*self.true_loc)])
+        if self.true_include_rim_joist[1]:
+            s += ShapeCollection([
+                    self.joist_class(
+                        self.true_width,
+                        orient_towards=Dim.X,
+                        position=Point3D(0, self.length - self.joist_class.width, 0) + self.true_loc
+                    )
+                ])
+        if self.true_include_end_joist[0]:
+            s += ShapeCollection([self.joist_class(
+                self.joist_len,
+                orient_towards=Dim.Y,
+                position=self.true_loc + Point3D(0, self.joist_y_start, 0)
+            )])
+        if self.true_include_end_joist[1]:
+            s += ShapeCollection([
+                self.joist_class(
+                    self.joist_len,
+                    orient_towards=Dim.Y,
+                    position=self.true_loc + Point3D(self.true_width - self.joist_class.width, self.joist_y_start, 0)
+                )
+            ])
         return s
 
 
 class DeckJoistsOnBlocks(Deck):
 
-    def __init__(self, *args, block_overhang, **kwargs):
-        self.block_overhang = block_overhang
+    def __init__(self, *args, block_overhang1, block_overhang2, **kwargs):
+        self.block_overhang1 = block_overhang1
+        self.block_overhang2 = block_overhang2
         super().__init__(*args, **kwargs)
 
     @property
-    def _frame(self) -> Frame:
+    def _frame(self) -> DeckBlockFrame:
         return DeckBlockFrame(
-            self.width - 2 * self.block_overhang,
+            self.width,
             self.length,
             max_joist_spacing=16,
             joist_class=self.joist_class,
-            loc=Point3D(self.block_overhang, 0, 0),
-            include_rim_joist=(False, False),
-            block_overhang=self.block_overhang
+            block_overhang1=self.block_overhang1,
+            block_overhang2=self.block_overhang2
         )
 
     def footings(self):
@@ -62,7 +92,7 @@ class DeckJoistsOnBlocks(Deck):
             for j in range(0, self._frame.n_joists):
                 b.append(
                     self.footing_class().translate(
-                        j * self._frame.joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang,
+                        j * self._frame.joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang1,
                         i * self.beam_spacing + self.joist_overhang,
                         0
                     )
@@ -73,83 +103,97 @@ class DeckJoistsOnBlocks(Deck):
         return self.frame() + self.footings() + self.decking() + ShapeCollection([Ground(), House()])
 
 
+class LDeckFrame:
+    def __init__(self, section1: DeckJoistsOnBlocks, section2: DeckJoistsOnBlocks, cutout_x: float, cutout_y: float):
+        self.section1 = DeckBlockFrame(
+            section1.width,
+            section1.length,
+            max_joist_spacing=16,
+            joist_class=section1.joist_class,
+            include_rim_joist=(True, False),
+            block_overhang1=section1.block_overhang1,
+            block_overhang2=section1.block_overhang2,
+        )
+        self.section2 = DeckBlockFrame(
+            section2.width,
+            section2.length,
+            max_joist_spacing=16,
+            joist_class=section2.joist_class,
+            include_rim_joist=(True, False),
+            include_end_joist=(False, True),
+            loc=Point3D(section1.width, cutout_y, 0),
+            block_overhang1=section2.block_overhang1,
+            block_overhang2=section2.block_overhang2
+        )
+        self.thickness = self.section1.thickness
+        self.cutout_x = cutout_x
+        self.cutout_y = cutout_y
+
+    def shape(self) -> ShapeCollection:
+        return (
+            self.section1.shape()
+            + self.section2.shape()
+            + ShapeCollection([
+                self.section1.joist_class(
+                    self.section1.true_width + self.section2.true_width,
+                    position=Point3D(0, self.section1.length - self.section1.joist_class.width, 0)
+                )
+            ])
+        )
+
+
 class LDeckOnBlocks(Deck):
     """An L-shaped deck defined as a rectangle with a cutout in the SW corner."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, block_overhang1, block_overhang2, block_overhang3, cutout_x, cutout_y, **kwargs):
         """
         :param cutout_x: float Length of cutout in x direction.
         :param cutout_y: float Length of cutout in y direction.
         :param args:
         :param kwargs:
         """
-        self.cutout_x = kwargs.pop('cutout_x')
-        self.cutout_y = kwargs.pop('cutout_y')
+        self.block_overhang1 = block_overhang1
+        self.block_overhang2 = block_overhang2
+        self.block_overhang3 = block_overhang3
+        self.cutout_x = cutout_x
+        self.cutout_y = cutout_y
         super().__init__(*args, **kwargs)
 
-        self.section1_width = self.width - self.cutout_x
-        self.section2_width = self.cutout_x
-        self.section1_length = self.length
-        self.section2_length = self.length - self.cutout_y
-        self.section2_start = (self.section1_width, self.cutout_y, 0)
         self._section1 = DeckJoistsOnBlocks(
             width=self.width - self.cutout_x,
             length=self.length,
             height=self.height,
             beam_class=self.beam_class,
+            joist_class=self.joist_class,
             decking_class=self.decking_class,
             footing_class=self.footing_class,
             joist_overhang=self.joist_overhang,
-            beam_overhang=self.beam_overhang
+            beam_overhang=self.beam_overhang,
+            block_overhang1=block_overhang1,
+            block_overhang2=block_overhang2
         )
         self._section2 = DeckJoistsOnBlocks(
             width=self.cutout_x,
             length=self.length - self.cutout_y,
             height=self.height,
             beam_class=self.beam_class,
+            joist_class=self.joist_class,
             decking_class=self.decking_class,
             footing_class=self.footing_class,
             joist_overhang=self.joist_overhang,
-            beam_overhang=self.cutout_x
+            beam_overhang=self.cutout_x,
+            block_overhang1=0,
+            block_overhang2=block_overhang3
         )
 
-    def frame(self, include_far_rim_joist=True, include_first_end_joist=True) -> ShapeCollection:
-        f = self._section1.frame(
-            include_far_rim_joist=False,
-            include_first_end_joist=include_first_end_joist
-        )
-
-        f += self._section2.frame(
-            include_far_rim_joist=False,
-            include_first_end_joist=False
-        ).translate(*self.section2_start)
-
-        if include_far_rim_joist:
-            f.append(
-                self.joist_class(self.width).translate(
-                    0,
-                    self.length - self.joist_class.width,
-                    self.beam_height
-                )
-            )
-        return f
+    @property
+    def _frame(self) -> LDeckFrame:
+        return LDeckFrame(self._section1, self._section2, self.cutout_x, self.cutout_y)
 
     def footings(self) -> ShapeCollection:
-        extra_blocks = ShapeCollection()
-        for i in range(self.n_beams):
-            extra_blocks.append(
-                self.footing_class().translate(
-                    self.section1_width - LumberSize.TWO.value / 2,
-                    self.cutout_y + i * self._section2.beam_spacing + self.beam_overhang,
-                    0
-                )
-            )
-        extra_blocks = extra_blocks.translate(0, 0, self.beam_height - self.footing_class.height)
-
         return (
             self._section1.footings()
-            + self._section2.footings().translate(*self.section2_start)
-            + extra_blocks
+            + self._section2.footings().translate(self._section1.width - self._section1.joist_class.width, self.cutout_y, 0)
         )
 
     def all(self) -> ShapeCollection:

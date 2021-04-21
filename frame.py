@@ -70,16 +70,16 @@ class Frame:
                 0
             ))
 
-        n_joists = self.n_joists
+        n_joists = self.n_joists - 1
         if not self.include_end_joist[1]:
             n_joists -= 1
 
         for i in range(self.n_joist_spans):
             f += even_spacing(
                 lambda: joist(self.joist_len, orient_towards=Dim.Y),
-                initial_pos=Point3D(0, row_position, 0),
+                initial_pos=Point3D(self.joist_spacing, row_position, 0),
                 offset=Point3D(self.joist_spacing, 0, 0),
-                n=self.n_joists
+                n=n_joists
             )
             row_position += self.joist_len + self.joist_row_offset
 
