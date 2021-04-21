@@ -1,18 +1,68 @@
 from deck import Deck
+from frame import Frame, SingleSpanFrame
+from point import Point3D, Dim
 from surroundings import Ground, House
-from lumber import LumberSize
+from lumber import LumberSize, LumberFactory
 from shapes import ShapeCollection
+from util import even_spacing
+
+
+class DeckBlockFrame(SingleSpanFrame):
+
+    def __init__(self, *args, block_overhang, **kwargs):
+        try:
+            width = kwargs.pop('width')
+        except KeyError:
+            width = args[0]
+            args = args[1:]
+        self.block_overhang = block_overhang
+        super().__init__(width - 2 * block_overhang, *args, **kwargs)
+        self.true_width = width
+
+    def shape(self) -> ShapeCollection:
+        s = super().shape()
+        s += ShapeCollection([
+            self.joist_class(self.true_width, orient_towards=Dim.X),
+            self.joist_class(
+                self.true_width,
+                orient_towards=Dim.X,
+                position=Point3D(0, self.length - self.joist_class.width, 0)
+            ),
+            self.joist_class(self.length, orient_towards=Dim.Y),
+            self.joist_class(self.length, orient_towards=Dim.Y).translate(
+                x=self.true_width - self.joist_class.width,
+                y=0,
+                z=0
+            ),
+        ])
+        return s
 
 
 class DeckJoistsOnBlocks(Deck):
 
+    def __init__(self, *args, block_overhang, **kwargs):
+        self.block_overhang = block_overhang
+        super().__init__(*args, **kwargs)
+
+    @property
+    def _frame(self) -> Frame:
+        return DeckBlockFrame(
+            self.width - 2 * self.block_overhang,
+            self.length,
+            max_joist_spacing=16,
+            joist_class=self.joist_class,
+            loc=Point3D(self.block_overhang, 0, 0),
+            include_rim_joist=(False, False),
+            block_overhang=self.block_overhang
+        )
+
     def footings(self):
         b = ShapeCollection()
         for i in range(self.n_beams):
-            for j in range(1, self.n_joists - 1):
+            for j in range(0, self._frame.n_joists):
                 b.append(
                     self.footing_class().translate(
-                        j * self.joist_spacing + LumberSize.TWO.value / 2,
+                        j * self._frame.joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang,
                         i * self.beam_spacing + self.joist_overhang,
                         0
                     )
@@ -47,10 +97,8 @@ class LDeckOnBlocks(Deck):
             length=self.length,
             height=self.height,
             beam_class=self.beam_class,
-            joist_class=self.joist_class,
             decking_class=self.decking_class,
             footing_class=self.footing_class,
-            max_spacing=self.max_spacing,
             joist_overhang=self.joist_overhang,
             beam_overhang=self.beam_overhang
         )
@@ -59,10 +107,8 @@ class LDeckOnBlocks(Deck):
             length=self.length - self.cutout_y,
             height=self.height,
             beam_class=self.beam_class,
-            joist_class=self.joist_class,
             decking_class=self.decking_class,
             footing_class=self.footing_class,
-            max_spacing=self.max_spacing,
             joist_overhang=self.joist_overhang,
             beam_overhang=self.cutout_x
         )

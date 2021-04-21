@@ -40,6 +40,10 @@ class NDPoint:
             results.append(a + b)
         return type(self)(*results)
 
+    def __rmul__(self: T, other: float) -> T:
+        results = (other * val for val in self)
+        return type(self)(*results)
+
     def __sub__(self: T, other: T) -> T:
         if self.ndim != other.ndim:
             raise ValueError(

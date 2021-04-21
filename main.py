@@ -9,27 +9,40 @@ from surroundings import Ground, House
 from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
-d = LDeckOnBlocks(
-    width=234,
+d = DeckJoistsOnBlocks(
+    width=234 - ft(3.5),
     length=ft(16),
     height=8,
     beam_class=TwoBySix,
+    beam_overhang=6,
     joist_class=TwoBySix,
     decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
     footing_class=DeckBlockFactory(),
-    cutout_x=ft(3.5),
-    cutout_y=ft(5)
+    block_overhang=8
 )
 
-d2 = FlushBeamDeck(
-    width=ft(16),
-    length=ft(16),
-    height=8,
-    beam_class=TwoBySix,
-    joist_class=TwoBySix,
-    decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
-    footing_class=DeckBlockFactory()
-)
+# d2 = DeckJoistsOnBlocks(
+#     width=234,
+#     length=ft(16),
+#     height=8,
+#     beam_class=TwoBySix,
+#     beam_overhang=6,
+#     joist_class=TwoBySix,
+#     decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
+#     footing_class=DeckBlockFactory(),
+#     cutout_x=ft(3.5),
+#     cutout_y=ft(5)
+# )
+#
+# d3 = FlushBeamDeck(
+#     width=ft(16),
+#     length=ft(16),
+#     height=8,
+#     beam_class=TwoBySix,
+#     joist_class=TwoBySix,
+#     decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
+#     footing_class=DeckBlockFactory()
+# )
 s.scad_render_to_file(Ground().render_scad() + House().render_scad() + d.all().render_scad(), 'foo.scad')
 write_dxf_doc(d.all(), Dim.Z, 'foo_top.dxf')
 write_dxf_doc(d.all(), Dim.Y, 'foo_front.dxf')
