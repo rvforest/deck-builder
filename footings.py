@@ -35,5 +35,6 @@ class DeckBlockFactory(FootingFactory):
             top_square_len=self.block_top_len,
             height=self.block_height,
             position=position,
-            layer=layer
+            layer=layer,
+            color=(0.5, 0.5, 0.5)
         )

@@ -24,7 +24,10 @@ class Ground(Shape):
         [2, 0, 4]
     ]
 
-    def render_scad(self) -> OpenSCADObject:
+    def __init__(self, color=(0, .4, .1)):
+        self.color = color
+
+    def _render_scad(self) -> OpenSCADObject:
         # noinspection PyTypeChecker
         return s.polyhedron(Ground.ground_points, Ground.ground_faces)
 
@@ -64,8 +67,8 @@ class House(Cuboid):
             Point3D(self.WALL_START, -self.WALL_THICKNESS, -3)
         )
 
-    def render_scad(self) -> OpenSCADObject:
-        house = super().render_scad()
+    def _render_scad(self) -> OpenSCADObject:
+        house = super()._render_scad()
         house = s.color(self.BLUE)(house)
         # Add door
         house = su.difference()(

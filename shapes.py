@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import Optional, Protocol, List
+from typing import Optional, Protocol, List, Tuple
 
 from ezdxf.layouts import Modelspace
 import solid as s
@@ -15,10 +15,18 @@ class Shape(Protocol):
     position: Optional[Point3D]
     layer: Optional[str]
     height: float
+    color: Optional[Tuple[float, float, float]]
 
     @abstractmethod
-    def render_scad(self) -> OpenSCADObject:
+    def _render_scad(self) -> OpenSCADObject:
         raise NotImplementedError
+
+    def render_scad(self) -> OpenSCADObject:
+        shape = self._render_scad()
+        if self.color is not None:
+            return s.color(self.color)(shape)
+        else:
+            return shape
 
     @abstractmethod
     def render_dxf(self, plane: Dim, msp: Modelspace):
@@ -31,17 +39,26 @@ class Shape(Protocol):
 
 class Cuboid(Shape):
 
-    def __init__(self, x_len: float, y_len: float, z_len: float, position: Optional[Point3D] = None, layer: str = None):
+    def __init__(
+            self,
+            x_len: float,
+            y_len: float,
+            z_len: float,
+            position: Optional[Point3D] = None,
+            layer: str = None,
+            color: Optional[Tuple[float, float, float]] = None
+    ):
         self.x_len = x_len
         self.y_len = y_len
         self.z_len = z_len
         self.lengths = (x_len, y_len, z_len)
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
+        self.color = color
 
         self.height = self.z_len
 
-    def render_scad(self):
+    def _render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
@@ -54,7 +71,10 @@ class Cuboid(Shape):
         msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
     def translate(self, x: float, y: float, z: float) -> Cuboid:
-        return Cuboid(self.x_len, self.y_len, self.z_len, position=self.position + Point3D(x, y, z), layer=self.layer)
+        return Cuboid(
+            self.x_len, self.y_len, self.z_len,
+            position=self.position + Point3D(x, y, z), layer=self.layer, color=self.color
+        )
 
 
 class TrapezoidalPrism(Shape):
@@ -66,7 +86,8 @@ class TrapezoidalPrism(Shape):
             height: float,
             center: bool = True,
             position: Optional[Point3D] = None,
-            layer: str = None
+            layer: str = None,
+            color: Tuple[float, float, float] = None
     ):
         self.top_square_len = top_square_len
         self.bottom_square_len = bottom_square_len
@@ -74,6 +95,7 @@ class TrapezoidalPrism(Shape):
         self.center = center
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
+        self.color = color
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
 
@@ -96,7 +118,7 @@ class TrapezoidalPrism(Shape):
             dxfattrib['layer'] = self.layer
         msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
-    def render_scad(self):
+    def _render_scad(self):
         scale = self.top_square_len / self.bottom_square_len
         # noinspection PyTypeChecker
         return su.translate(tuple(self.position))(
@@ -110,7 +132,9 @@ class TrapezoidalPrism(Shape):
             self.bottom_square_len,
             self.top_square_len,
             self.height,
-            position=self.position + Point3D(x, y, z), layer=self.layer
+            position=self.position + Point3D(x, y, z),
+            layer=self.layer,
+            color=self.color
         )
 
 
