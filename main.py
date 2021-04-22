@@ -34,7 +34,7 @@ d2 = LDeckOnBlocks(
     cutout_x=ft(4),
     cutout_y=ft(5),
     block_overhang1=8,
-    block_overhang2=12,
+    block_overhang2=16,
     block_overhang3=8
 )
 #
@@ -48,6 +48,6 @@ d2 = LDeckOnBlocks(
 #     footing_class=DeckBlockFactory()
 # )
 s.scad_render_to_file(Ground().render_scad() + House().render_scad() + d2.all().render_scad(), 'foo.scad')
-write_dxf_doc(d.all(), Dim.Z, 'foo_top.dxf')
-write_dxf_doc(d.all(), Dim.Y, 'foo_front.dxf')
-write_dxf_doc(d.all(), Dim.X, 'foo_side.dxf')
+write_dxf_doc(d2.all(), Dim.Z, 'foo_top.dxf')
+write_dxf_doc(d2.all(), Dim.Y, 'foo_front.dxf')
+write_dxf_doc(d2.all(), Dim.X, 'foo_side.dxf')

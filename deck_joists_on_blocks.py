@@ -191,10 +191,17 @@ class LDeckOnBlocks(Deck):
         return LDeckFrame(self._section1, self._section2, self.cutout_x, self.cutout_y)
 
     def footings(self) -> ShapeCollection:
-        return (
-            self._section1.footings()
-            + self._section2.footings().translate(self._section1.width - self._section1.joist_class.width, self.cutout_y, 0)
-        )
+        n_joists2 = self._frame.section2.n_joists
+        section2 = self._section2.footings()
+        section2 = ShapeCollection([
+            footing.translate(
+                self._section1.width - self._section1.joist_class.width if i % n_joists2 == 0 else self._section1.width,
+                self.cutout_y,
+                0
+            )
+            for i, footing in enumerate(section2)
+        ])
+        return self._section1.footings() + section2
 
     def all(self) -> ShapeCollection:
         return self.frame() + self.footings()
