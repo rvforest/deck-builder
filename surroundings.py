@@ -61,6 +61,11 @@ class House(Cuboid):
     DOOR_START = 19.5 * 12 - DOOR_WIDTH  # Reference from NW corner of deck
     DOOR_HEIGHT = 80
 
+    WINDOW_WIDTH = 61.5
+    WINDOW_HEIGHT = 32.5
+    WINDOW_DIST_FROM_GROUND = 47.5
+    WINDOW_DIST_FROM_DOOR = 26.5
+
     def __init__(self):
         super().__init__(
             self.HOUSE_WALL_LEN, self.WALL_THICKNESS, self.HOUSE_HEIGHT,
@@ -78,6 +83,16 @@ class House(Cuboid):
                 -2 * self.WALL_THICKNESS,
                 self.THRESHOLD_HEIGHT + self.GROUND_HEIGHT_AT_DOOR
             ))(s.cube([self.DOOR_WIDTH, 3 * self.WALL_THICKNESS, self.DOOR_HEIGHT]))
+        )
+
+        # Add window
+        house = su.difference()(
+            house,
+            s.translate((
+                House.DOOR_START - House.WINDOW_DIST_FROM_DOOR - House.WINDOW_WIDTH,
+                -2 * House.WALL_THICKNESS,
+                House.WINDOW_DIST_FROM_GROUND + House.GROUND_HEIGHT_AT_DOOR + House.THRESHOLD_HEIGHT
+            ))(s.cube([House.WINDOW_WIDTH, 3 * House.WALL_THICKNESS, House.WINDOW_HEIGHT]))
         )
         return house
 
