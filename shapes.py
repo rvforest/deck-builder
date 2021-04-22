@@ -63,7 +63,13 @@ class Cuboid(Shape):
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
         args = [self.lengths[d.value] for d in Dim if d != plane]
-        path = trace_rectangle(args[0], args[1], self.position.get_2d_point(plane))
+        position_2d = self.position.get_2d_point(plane)
+        if plane == Dim.Y:
+            position_2d = position_2d.h_invert()
+            h_invert = True
+        else:
+            h_invert = False
+        path = trace_rectangle(args[0], args[1], position_2d, h_invert=h_invert)
 
         dxfattrib = {}
         if self.layer:
@@ -106,12 +112,18 @@ class TrapezoidalPrism(Shape):
             # Other two sides are identical
             # Adjust so that height is not centered
             position_2d = self.position.get_2d_point(plane) + Point2D(0, self.height / 2)
+            if plane == Dim.Y:
+                position_2d = position_2d.h_invert()
+                h_invert = True
+            else:
+                h_invert = False
             path = trace_isosceles_trapezoid(
                 self.bottom_square_len,
                 self.top_square_len,
                 self.height,
                 position_2d,
-                self.center
+                self.center,
+                h_invert
             )
         dxfattrib = {}
         if self.layer:

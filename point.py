@@ -94,3 +94,6 @@ class Point2D(NDPoint):
     @property
     def _dim_vals(self) -> Tuple[float, float]:
         return self.i, self.j
+
+    def h_invert(self) -> Point2D:
+        return Point2D(-self.i, self.j)

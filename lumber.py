@@ -46,10 +46,16 @@ class Lumber(Cuboid):
         super().render_dxf(plane, msp)
 
         # Next draw X if lumber goes into page
-        position_2d = self.position.get_2d_point(plane)
         if plane == self.orient_towards:
-            msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
-            msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
+            position_2d = self.position.get_2d_point(plane)
+            if plane == Dim.Y:
+                position_2d = position_2d.h_invert()
+                msp.add_line(position_2d, position_2d + Point2D(self.width, self.height).h_invert())
+                msp.add_line(position_2d + Point2D(0, self.height).h_invert(),
+                             position_2d + Point2D(self.width, 0).h_invert())
+            else:
+                msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
+                msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
 
     def translate(self, x: float, y: float, z: float) -> Lumber:
         return Lumber(
