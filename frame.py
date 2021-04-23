@@ -1,9 +1,13 @@
-from typing import Tuple
+from __future__ import annotations
+from typing import Tuple, TYPE_CHECKING
 
 from point import Dim, Point3D
 from shapes import ShapeCollection
-from lumber import LumberFactory, LumberSize
+from lumber import LumberSize
 from util import n_members, oc_spacing, even_spacing
+
+if TYPE_CHECKING:
+    from deck import Deck
 
 
 class Frame:
@@ -13,7 +17,7 @@ class Frame:
             width: float,
             length: float,
             max_joist_spacing: float,
-            joist_class: LumberFactory,
+            deck: Deck,
             loc: Point3D = Point3D(0, 0, 0),
             include_end_joist: Tuple[bool, bool] = (True, True),
             include_rim_joist: Tuple[bool, bool] = (True, True)
@@ -21,12 +25,13 @@ class Frame:
         self.width = width
         self.length = length
         self.max_joist_spacing = max_joist_spacing
-        self.joist_class = joist_class
+        self.deck = deck
+        self.joist_class = deck.joist_class
         self.loc = loc
         self.include_end_joist = include_end_joist
         self.include_rim_joist = include_rim_joist
 
-        self.thickness = joist_class.height
+        self.thickness = self.joist_class.height
 
     @property
     def joist_len(self) -> float:

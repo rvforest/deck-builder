@@ -81,7 +81,7 @@ class DeckJoistsOnBlocks(Deck):
             self.width,
             self.length,
             max_joist_spacing=16,
-            joist_class=self.joist_class,
+            deck=self,
             block_overhang1=self.block_overhang1,
             block_overhang2=self.block_overhang2
         )
@@ -109,7 +109,7 @@ class LDeckFrame:
             section1.width,
             section1.length,
             max_joist_spacing=16,
-            joist_class=section1.joist_class,
+            deck=section1,
             include_rim_joist=(True, False),
             block_overhang1=section1.block_overhang1,
             block_overhang2=section1.block_overhang2,
@@ -118,7 +118,7 @@ class LDeckFrame:
             section2.width,
             section2.length,
             max_joist_spacing=16,
-            joist_class=section2.joist_class,
+            deck=section2,
             include_rim_joist=(True, False),
             include_end_joist=(False, True),
             loc=Point3D(section1.width, cutout_y, 0),
