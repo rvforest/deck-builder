@@ -66,6 +66,64 @@ class DeckBlockFrame(SingleSpanFrame):
                     position=self.true_loc + Point3D(self.true_width - joist.width, self.joist_y_start, 0)
                 )
             ])
+
+        # Blocking on overhang
+        if self.block_overhang1 > 0:
+            s += ShapeCollection([
+                joist(
+                    self.block_overhang1 - joist.width,
+                    orient_towards=Dim.X,
+                    position=Point3D(joist.width, self.deck.joist_overhang - joist.width / 2, 0)
+                ),
+                joist(
+                    self.block_overhang1 - joist.width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + self.true_loc + self.true_loc + self.true_loc + Point3D(
+                        joist.width,
+                        (self.length - 2 * self.deck.joist_overhang) / 2 + self.deck.joist_overhang - joist.width,
+                        0
+                    )
+                ),
+                joist(
+                    self.block_overhang1 - joist.width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + Point3D(
+                        joist.width,
+                        self.length - self.deck.joist_overhang - 3/2 * joist.width,
+                        0
+                    )
+                )
+            ])
+        if self.block_overhang2 > 0:
+            s += ShapeCollection([
+                joist(
+                    self.block_overhang2 - joist.width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + Point3D(
+                        self.true_width - self.block_overhang2,
+                        self.deck.joist_overhang - joist.width / 2,
+                        0
+                    )
+                ),
+                joist(
+                    self.block_overhang2 - joist.width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + Point3D(
+                        self.true_width - self.block_overhang2,
+                        (self.length - 2 * self.deck.joist_overhang) / 2 + self.deck.joist_overhang - joist.width,
+                        0
+                    )
+                ),
+                joist(
+                    self.block_overhang2 - joist.width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + Point3D(
+                        self.true_width - self.block_overhang2,
+                        self.length - self.deck.joist_overhang - 3 / 2 * joist.width,
+                        0
+                    )
+                ),
+            ])
         return s
 
 
