@@ -2,7 +2,8 @@ import solid as s
 from ezdxf.layouts import Modelspace
 from solid import OpenSCADObject, utils as su
 
-from point import Dim, Point3D
+from paths import trace_rectangle
+from point import Dim, Point3D, Point2D
 from shapes import Shape, Cuboid
 
 
@@ -63,8 +64,10 @@ class House(Cuboid):
 
     WINDOW_WIDTH = 61.5
     WINDOW_HEIGHT = 32.5
-    WINDOW_DIST_FROM_GROUND = 47.5
+    WINDOW_DIST_FROM_GROUND = 47.5 - GROUND_HEIGHT_AT_DOOR
     WINDOW_DIST_FROM_DOOR = 26.5
+    WINDOW_X_START = DOOR_START - WINDOW_DIST_FROM_DOOR - WINDOW_WIDTH
+    WINDOW_Z_START = WINDOW_DIST_FROM_GROUND + GROUND_HEIGHT_AT_DOOR + THRESHOLD_HEIGHT
 
     def __init__(self):
         super().__init__(
@@ -89,15 +92,32 @@ class House(Cuboid):
         house = su.difference()(
             house,
             s.translate((
-                House.DOOR_START - House.WINDOW_DIST_FROM_DOOR - House.WINDOW_WIDTH,
-                -2 * House.WALL_THICKNESS,
-                House.WINDOW_DIST_FROM_GROUND + House.GROUND_HEIGHT_AT_DOOR + House.THRESHOLD_HEIGHT
+                House.WINDOW_X_START,
+                -2.0 * House.WALL_THICKNESS,
+                House.WINDOW_Z_START
             ))(s.cube([House.WINDOW_WIDTH, 3 * House.WALL_THICKNESS, House.WINDOW_HEIGHT]))
         )
         return house
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
         if plane == Dim.Y:
-            pass
+            window = trace_rectangle(
+                House.WINDOW_WIDTH,
+                House.WINDOW_HEIGHT,
+                Point2D(-House.WINDOW_X_START, House.WINDOW_Z_START),
+                h_invert=True
+            )
+            dxfattrib = {}
+            if self.layer:
+                dxfattrib['layer'] = self.layer
+            msp.add_lwpolyline(window, dxfattribs=dxfattrib)
+
+            door = trace_rectangle(
+                House.DOOR_WIDTH,
+                House.DOOR_HEIGHT,
+                Point2D(-House.DOOR_START, House.THRESHOLD_HEIGHT),
+                h_invert=True
+            )
+            msp.add_lwpolyline(door, dxfattribs=dxfattrib)
         else:
             super().render_dxf(plane, msp)

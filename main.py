@@ -5,6 +5,7 @@ from deck_joists_on_blocks import DeckJoistsOnBlocks, LDeckOnBlocks
 from flush_beam_deck import FlushBeamDeck
 from footings import DeckBlockFactory
 from point import Dim
+from shapes import ShapeCollection
 from surroundings import Ground, House
 from util import ft, write_dxf_doc
 
@@ -47,7 +48,12 @@ d2 = LDeckOnBlocks(
 #     decking_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
 #     footing_class=DeckBlockFactory()
 # )
-s.scad_render_to_file(Ground().render_scad() + House().render_scad() + d2.all().render_scad(), 'foo.scad')
-write_dxf_doc(d2.all(), Dim.Z, 'foo_top.dxf')
-write_dxf_doc(d2.all(), Dim.Y, 'foo_front.dxf')
-write_dxf_doc(d2.all(), Dim.X, 'foo_side.dxf')
+deck_and_house = ShapeCollection([
+    Ground(),
+    House(),
+    d2.all()
+])
+s.scad_render_to_file(deck_and_house.render_scad(), 'foo.scad')
+write_dxf_doc(deck_and_house, Dim.Z, 'foo_top.dxf')
+write_dxf_doc(deck_and_house, Dim.Y, 'foo_front.dxf')
+write_dxf_doc(deck_and_house, Dim.X, 'foo_side.dxf')
