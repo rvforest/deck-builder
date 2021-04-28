@@ -4,6 +4,7 @@ from typing import Protocol, Callable
 
 import ezdxf
 from ezdxf.layouts import Modelspace
+import solid as s
 
 from point import Point3D
 from shapes import Dim, Shape, ShapeCollection
@@ -47,3 +48,10 @@ def even_spacing(
         new_position = initial_pos + i * offset
         f.append(shape().translate(*new_position))
     return f
+
+
+def render_all(obj, name):
+    s.scad_render_to_file(obj.render_scad(), f'{name}.scad')
+    write_dxf_doc(obj, Dim.Z, f'{name}_top.dxf')
+    write_dxf_doc(obj, Dim.Y, f'{name}_front.dxf')
+    write_dxf_doc(obj, Dim.X, f'{name}_side.dxf')
