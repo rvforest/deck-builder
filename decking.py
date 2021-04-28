@@ -37,5 +37,8 @@ class SingleSpanDecking(Decking):
 
 
 if __name__ == '__main__':
-    decking = SingleSpanDecking(ft(20), ft(16), LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value))
+    decking = SingleSpanDecking(
+        ft(20), ft(16),
+        LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value, draw_x=False)
+    )
     render_all(decking.all(), 'decking_test')

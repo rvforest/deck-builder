@@ -27,11 +27,13 @@ class Lumber(Cuboid):
             length: float,
             position: Point3D,
             layer: str = None,
-            orient_towards: Dim = Dim.X
+            orient_towards: Dim = Dim.X,
+            draw_x: bool = True
     ):
         self.width = width
         self.height = height
         self.length = length
+        self.draw_x = draw_x
 
         self.orient_towards = orient_towards
         x, y, z = length, width, height
@@ -50,12 +52,14 @@ class Lumber(Cuboid):
             position_2d = self.position.get_2d_point(plane)
             if plane == Dim.Y:
                 position_2d = position_2d.h_invert()
-                msp.add_line(position_2d, position_2d + Point2D(self.width, self.height).h_invert())
-                msp.add_line(position_2d + Point2D(0, self.height).h_invert(),
-                             position_2d + Point2D(self.width, 0).h_invert())
+                if self.draw_x:
+                    msp.add_line(position_2d, position_2d + Point2D(self.width, self.height).h_invert())
+                    msp.add_line(position_2d + Point2D(0, self.height).h_invert(),
+                                 position_2d + Point2D(self.width, 0).h_invert())
             else:
-                msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
-                msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
+                if self.draw_x:
+                    msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
+                    msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
 
     def translate(self, x: float, y: float, z: float) -> Lumber:
         return Lumber(
@@ -69,9 +73,10 @@ class Lumber(Cuboid):
 
 
 class LumberFactory:
-    def __init__(self, width: float, height: float):
+    def __init__(self, width: float, height: float, draw_x: bool = True):
         self.width = width
         self.height = height
+        self.draw_x = draw_x
 
     def __call__(
             self,
@@ -80,7 +85,7 @@ class LumberFactory:
             layer: Optional[str] = None,
             orient_towards: Dim = Dim.X
     ) -> Lumber:
-        return Lumber(self.width, self.height, length, position, layer, orient_towards)
+        return Lumber(self.width, self.height, length, position, layer, orient_towards, draw_x=self.draw_x)
 
 
 if __name__ == '__main__':
