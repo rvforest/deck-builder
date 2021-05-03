@@ -16,7 +16,7 @@ class Decking:
         self.length = length
         self.board_cls = board_cls
 
-    def all(self) -> ShapeCollection:
+    def shape(self) -> ShapeCollection:
         raise NotImplementedError
 
     @property
@@ -26,7 +26,7 @@ class Decking:
 
 class SingleSpanDecking(Decking):
 
-    def all(self) -> ShapeCollection:
+    def shape(self) -> ShapeCollection:
         board = self.board_cls
         boards = ShapeCollection([
             board(self.width, orient_towards=Dim.X, position=Point3D(
@@ -41,7 +41,7 @@ class SingleSpanDecking(Decking):
 
 class StaggeredThirdsDecking(Decking):
 
-    def all(self) -> ShapeCollection:
+    def shape(self) -> ShapeCollection:
         max_len = ft(16)
         board = self.board_cls
         boards = []
@@ -69,4 +69,4 @@ if __name__ == '__main__':
         ft(20), ft(16),
         LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value, draw_x=False)
     )
-    render_all(decking.all(), 'decking_test')
+    render_all(decking.shape(), 'decking_test')
