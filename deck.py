@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict
 
+from decking import Decking
 from footings import FootingFactory
 from frame import Frame
 from lumber import LumberSize, LumberFactory
@@ -25,7 +26,7 @@ class Deck:
             height: float,
             beam_class: LumberFactory,
             joist_class: LumberFactory,
-            decking_class: LumberFactory,
+            decking_board_class: LumberFactory,
             footing_class: FootingFactory,
             joist_overhang: float = 16,
             beam_overhang: float = 16,
@@ -35,7 +36,7 @@ class Deck:
         self.height = height
         self.beam_class = beam_class
         self.joist_class = joist_class
-        self.decking_class = decking_class
+        self.decking_board_class = decking_board_class
         self.footing_class = footing_class
         self.joist_overhang = joist_overhang
         self.beam_overhang = beam_overhang
@@ -55,7 +56,7 @@ class Deck:
 
     @property
     def frame_height(self):
-        return self.height - self.decking_class.height
+        return self.height - self.decking_board_class.height
 
     @property
     def beam_height(self):
@@ -75,10 +76,12 @@ class Deck:
     def frame(self) -> ShapeCollection:
         return self._frame.shape().translate(0, 0, self.beam_height)
 
+    @property
+    def _decking(self) -> Decking:
+        raise NotImplementedError
+
     def decking(self) -> ShapeCollection:
-        return ShapeCollection([
-            # self.decking_class(ft(20)).translate(0, 0, self.frame_height)
-        ])
+        return self._decking.shape().translate(0, 0, self.frame_height)
 
     def all(self):
         raise NotImplementedError

@@ -1,4 +1,7 @@
+from typing import Type
+
 from deck import Deck
+from decking import SingleSpanDecking, Decking
 from frame import SingleSpanFrame
 from point import Point3D, Dim
 from surroundings import Ground, House
@@ -129,9 +132,17 @@ class DeckBlockFrame(SingleSpanFrame):
 
 class DeckJoistsOnBlocks(Deck):
 
-    def __init__(self, *args, block_overhang1, block_overhang2, **kwargs):
+    def __init__(
+            self,
+            *args,
+            block_overhang1,
+            block_overhang2,
+            decking_class: Type[Decking] = SingleSpanDecking,
+            **kwargs
+    ):
         self.block_overhang1 = block_overhang1
         self.block_overhang2 = block_overhang2
+        self.decking_class = decking_class
         super().__init__(*args, **kwargs)
 
     @property
@@ -158,7 +169,8 @@ class DeckJoistsOnBlocks(Deck):
                 )
         return b.translate(0, 0, self.beam_height - self.footing_class.height)
 
+    def _decking(self) -> Decking:
+        return self.decking_class(self.width, self.length, self.decking_board_class)
+
     def all(self):
         return self.frame() + self.footings() + self.decking() + ShapeCollection([Ground(), House()])
-
-
