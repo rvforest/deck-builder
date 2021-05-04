@@ -1,6 +1,10 @@
+from __future__ import annotations
+import math
+
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
-from point import Point3D
+from decking import Decking
+from point import Point3D, Dim
 from shapes import ShapeCollection
 
 
@@ -41,6 +45,48 @@ class LDeckFrame:
                 )
             ])
         )
+
+
+class LDecking:
+
+    # def __init__(self, section1: DeckJoistsOnBlocks, section2: DeckJoistsOnBlocks, cutout_x: float, cutout_y: float):
+    def __init__(self, ldeck: LDeckOnBlocks):
+        self.ldeck = ldeck
+
+        self.section1 = ldeck.section1
+        self.section2 = ldeck.section2
+        self.cutout_x = ldeck.cutout_x
+        self.cutout_y = ldeck.cutout_y
+
+        self.n_boards1 = math.ceil(
+            self.cutout_y / (self.section1.decking_board_class.width + self.section1.decking_class.w2w_gap)
+        )
+        self.n_boards2 = math.ceil(
+            self.section2.length / (self.section1.decking_board_class.width + self.section1.decking_class.w2w_gap)
+        )
+
+    def shape(self) -> ShapeCollection:
+        board = self.ldeck.decking_board_class
+        boards = ShapeCollection([
+            # Section 1 - shorter decking span
+            board(self.ldeck.width - self.ldeck.cutout_x, orient_towards=Dim.X, position=Point3D(
+                x=0,
+                y=i * (board.width + Decking.w2w_gap),
+                z=0
+            ))
+            for i in range(self.n_boards1)
+        ])
+
+        # Section 2 - longer decking span
+        boards += ShapeCollection([
+            board(self.ldeck.width, orient_towards=Dim.X, position=Point3D(
+                x=0,
+                y=i * (board.width + Decking.w2w_gap) + self.ldeck.cutout_y + 0,
+                z=0
+            ))
+            for i in range(self.n_boards1)
+        ])
+        return boards
 
 
 class LDeckOnBlocks(Deck):
@@ -86,6 +132,10 @@ class LDeckOnBlocks(Deck):
             block_overhang1=0,
             block_overhang2=block_overhang3
         )
+
+    @property
+    def _decking(self) -> LDecking:
+        return LDecking(self)
 
     @property
     def _frame(self) -> LDeckFrame:
