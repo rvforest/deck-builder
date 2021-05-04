@@ -8,8 +8,8 @@ from util import render_all, ft
 
 class Decking:
 
-    w2w_gap = 0.2
-    e2e_gap = 0.2
+    w2w_gap = 3 / 8
+    e2e_gap = 1 / 8
 
     def __init__(self, width: float, length: float, board_cls: LumberFactory):
         self.width = width
