@@ -86,7 +86,7 @@ class LDecking:
 
     @property
     def n_boards2(self) -> int:
-        return self._n_boards(self.section2.length)
+        return self._n_boards(self.ldeck.length - self.cutout_y)
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class
@@ -107,7 +107,7 @@ class LDecking:
                 y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
                 z=0
             ))
-            for i in range(self.n_boards1)
+            for i in range(self.n_boards2)
         ])
         return boards
 
