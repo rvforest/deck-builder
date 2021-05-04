@@ -49,7 +49,8 @@ class LDeckFrame:
 
 class LDecking:
 
-    # def __init__(self, section1: DeckJoistsOnBlocks, section2: DeckJoistsOnBlocks, cutout_x: float, cutout_y: float):
+    decking_start = 0.5
+
     def __init__(self, ldeck: LDeckOnBlocks):
         self.ldeck = ldeck
 
@@ -58,12 +59,34 @@ class LDecking:
         self.cutout_x = ldeck.cutout_x
         self.cutout_y = ldeck.cutout_y
 
-        self.n_boards1 = math.ceil(
-            self.cutout_y / (self.section1.decking_board_class.width + self.section1.decking_class.w2w_gap)
-        )
-        self.n_boards2 = math.ceil(
-            self.section2.length / (self.section1.decking_board_class.width + self.section1.decking_class.w2w_gap)
-        )
+    @property
+    def w2w_gap(self):
+        board = self.ldeck.decking_board_class
+        len_to_deck = self.cutout_y - LDecking.decking_start
+        n_boards = math.floor(len_to_deck / board.width)
+        gap = (len_to_deck - board.width * n_boards) / (n_boards - 1)
+
+        if gap < Decking.w2w_gap_min:
+            n_boards -= 1
+            gap = (len_to_deck - board.width * n_boards) / (n_boards - 1)
+
+        if gap > Decking.w2w_gap_max:
+            raise ValueError("Could not find gap to match deck dimensions.")
+
+        return gap
+
+    def _n_boards(self, length: float) -> int:
+        result = length / (self.section1.decking_board_class.width + self.w2w_gap)
+        assert result % 1 == 0
+        return int(result)
+
+    @property
+    def n_boards1(self) -> int:
+        return self._n_boards(self.cutout_y)
+
+    @property
+    def n_boards2(self) -> int:
+        return self._n_boards(self.section2.length)
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class
@@ -71,7 +94,7 @@ class LDecking:
             # Section 1 - shorter decking span
             board(self.ldeck.width - self.ldeck.cutout_x, orient_towards=Dim.X, position=Point3D(
                 x=0,
-                y=i * (board.width + Decking.w2w_gap),
+                y=i * (board.width + self.w2w_gap) + LDecking.decking_start,
                 z=0
             ))
             for i in range(self.n_boards1)
@@ -81,7 +104,7 @@ class LDecking:
         boards += ShapeCollection([
             board(self.ldeck.width, orient_towards=Dim.X, position=Point3D(
                 x=0,
-                y=i * (board.width + Decking.w2w_gap) + self.ldeck.cutout_y + 0,
+                y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
                 z=0
             ))
             for i in range(self.n_boards1)
