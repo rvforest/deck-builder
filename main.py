@@ -26,7 +26,7 @@ d = DeckJoistsOnBlocks(
 
 d2 = LDeckOnBlocks(
     width=240,
-    length=ft(16),
+    length=ft(16) - 3,
     height=8,
     beam_class=TwoBySix,
     beam_overhang=6,

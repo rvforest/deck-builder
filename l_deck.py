@@ -65,13 +65,13 @@ class LDecking:
     @property
     def w2w_gap(self):
         board = self.ldeck.decking_board_class
-        len_to_deck = self.cutout_y - LDecking.decking_start
+        len_to_deck = self.cutout_y - LDecking.decking_start - self.board_overhang
         n_boards = math.floor(len_to_deck / board.width)
-        gap = (len_to_deck - board.width * n_boards) / (n_boards - 1)
+        gap = (len_to_deck - board.width * n_boards) / n_boards
 
         if gap < Decking.w2w_gap_min:
             n_boards -= 1
-            gap = (len_to_deck - board.width * n_boards) / (n_boards - 1)
+            gap = (len_to_deck - board.width * n_boards) / n_boards
 
         if gap > Decking.w2w_gap_max:
             raise ValueError(
@@ -86,13 +86,13 @@ class LDecking:
 
     @property
     def n_boards1(self) -> Tuple[int, float]:
-        result = self._n_boards(self.cutout_y)
+        result = self._n_boards(self.cutout_y - self.decking_start - self.board_overhang)
         assert result % 1 == 0
         return int(result), 0
 
     @property
     def n_boards2(self) -> Tuple[int, float]:
-        result = self._n_boards(self.ldeck.length - self.cutout_y)
+        result = self._n_boards(self.ldeck.length - self.cutout_y + self.w2w_gap + 2 * self.board_overhang)
         return int(result), result % 1
 
     def shape(self) -> ShapeCollection:
@@ -118,7 +118,7 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang,
-                    y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
+                    y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
@@ -133,7 +133,7 @@ class LDecking:
                 length=self.ldeck.width + 2 * self.board_overhang,
                 position=Point3D(
                     x=-self.board_overhang,
-                    y=self.n_boards2[0] * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
+                    y=self.n_boards2[0] * (board.width + self.w2w_gap) + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
