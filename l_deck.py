@@ -60,7 +60,7 @@ class LDeckOnBlocks(Deck):
         self.cutout_y = cutout_y
         super().__init__(*args, **kwargs)
 
-        self._section1 = DeckJoistsOnBlocks(
+        self.section1 = DeckJoistsOnBlocks(
             width=self.width - self.cutout_x,
             length=self.length,
             height=self.height,
@@ -73,7 +73,7 @@ class LDeckOnBlocks(Deck):
             block_overhang1=block_overhang1,
             block_overhang2=block_overhang2
         )
-        self._section2 = DeckJoistsOnBlocks(
+        self.section2 = DeckJoistsOnBlocks(
             width=self.cutout_x,
             length=self.length - self.cutout_y,
             height=self.height,
@@ -89,20 +89,20 @@ class LDeckOnBlocks(Deck):
 
     @property
     def _frame(self) -> LDeckFrame:
-        return LDeckFrame(self._section1, self._section2, self.cutout_x, self.cutout_y)
+        return LDeckFrame(self.section1, self.section2, self.cutout_x, self.cutout_y)
 
     def footings(self) -> ShapeCollection:
         n_joists2 = self._frame.section2.n_joists
-        section2 = self._section2.footings()
+        section2 = self.section2.footings()
         section2 = ShapeCollection([
             footing.translate(
-                self._section1.width - self._section1.joist_class.width if i % n_joists2 == 0 else self._section1.width,
+                self.section1.width - self.section1.joist_class.width if i % n_joists2 == 0 else self.section1.width,
                 self.cutout_y,
                 0
             )
             for i, footing in enumerate(section2)
         ])
-        return self._section1.footings() + section2
+        return self.section1.footings() + section2
 
     def all(self) -> ShapeCollection:
         return self.frame() + self.footings()
