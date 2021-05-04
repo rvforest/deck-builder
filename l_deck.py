@@ -178,4 +178,4 @@ class LDeckOnBlocks(Deck):
         return self.section1.footings() + section2
 
     def all(self) -> ShapeCollection:
-        return self.frame() + self.footings()
+        return self.frame() + self.footings() + self.decking()
