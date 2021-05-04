@@ -1,9 +1,11 @@
 from __future__ import annotations
 import math
+from typing import Tuple
 
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
+from lumber import Lumber
 from point import Point3D, Dim
 from shapes import ShapeCollection
 
@@ -50,6 +52,7 @@ class LDeckFrame:
 class LDecking:
 
     decking_start = 0.5
+    board_overhang = 1
 
     def __init__(self, ldeck: LDeckOnBlocks):
         self.ldeck = ldeck
@@ -78,39 +81,62 @@ class LDecking:
 
         return gap
 
-    def _n_boards(self, length: float) -> int:
-        result = length / (self.section1.decking_board_class.width + self.w2w_gap)
+    def _n_boards(self, length: float) -> float:
+        return length / (self.section1.decking_board_class.width + self.w2w_gap)
+
+    @property
+    def n_boards1(self) -> Tuple[int, float]:
+        result = self._n_boards(self.cutout_y)
         assert result % 1 == 0
-        return int(result)
+        return int(result), 0
 
     @property
-    def n_boards1(self) -> int:
-        return self._n_boards(self.cutout_y)
-
-    @property
-    def n_boards2(self) -> int:
-        return self._n_boards(self.ldeck.length - self.cutout_y)
+    def n_boards2(self) -> Tuple[int, float]:
+        result = self._n_boards(self.ldeck.length - self.cutout_y)
+        return int(result), result % 1
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class
         boards = ShapeCollection([
             # Section 1 - shorter decking span
-            board(self.ldeck.width - self.ldeck.cutout_x, orient_towards=Dim.X, position=Point3D(
-                x=0,
-                y=i * (board.width + self.w2w_gap) + LDecking.decking_start,
-                z=0
-            ))
-            for i in range(self.n_boards1)
+            board(
+                self.ldeck.width - self.ldeck.cutout_x + 2 * self.board_overhang,
+                orient_towards=Dim.X,
+                position=Point3D(
+                    x=-self.board_overhang,
+                    y=i * (board.width + self.w2w_gap) + LDecking.decking_start,
+                    z=0
+                )
+            )
+            for i in range(self.n_boards1[0])
         ])
 
         # Section 2 - longer decking span
         boards += ShapeCollection([
-            board(self.ldeck.width, orient_towards=Dim.X, position=Point3D(
-                x=0,
-                y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
-                z=0
-            ))
-            for i in range(self.n_boards2)
+            board(
+                self.ldeck.width + 2 * self.board_overhang,
+                orient_towards=Dim.X,
+                position=Point3D(
+                    x=-self.board_overhang,
+                    y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
+                    z=0
+                )
+            )
+            for i in range(self.n_boards2[0])
+        ])
+
+        # Final board needs to be ripped
+        boards += ShapeCollection([
+            Lumber(
+                width=board.width * self.n_boards2[1],
+                height=board.height,
+                length=self.ldeck.width + 2 * self.board_overhang,
+                position=Point3D(
+                    x=-self.board_overhang,
+                    y=self.n_boards2[0] * (board.width + self.w2w_gap) + self.ldeck.cutout_y + LDecking.decking_start,
+                    z=0
+                )
+            )
         ])
         return boards
 
