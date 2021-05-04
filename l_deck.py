@@ -71,7 +71,10 @@ class LDecking:
             gap = (len_to_deck - board.width * n_boards) / (n_boards - 1)
 
         if gap > Decking.w2w_gap_max:
-            raise ValueError("Could not find gap to match deck dimensions.")
+            raise ValueError(
+                'Could not find gap to match deck dimensions. '
+                f'Required gap is {gap:.2f}" but max gap size is {Decking.w2w_gap_max}"'
+            )
 
         return gap
 
