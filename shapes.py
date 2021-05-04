@@ -186,3 +186,8 @@ class ShapeCollection:
 
 if __name__ == '__main__':
     pass
+
+
+class Drawable(Protocol):
+    def shape(self) -> ShapeCollection:
+        raise NotImplementedError

@@ -1,11 +1,10 @@
 from __future__ import annotations
 from typing import Dict
 
-from decking import Decking
 from footings import FootingFactory
 from frame import Frame
 from lumber import LumberSize, LumberFactory
-from shapes import ShapeCollection
+from shapes import ShapeCollection, Drawable
 from util import ft, n_members, oc_spacing
 
 # southern pine
@@ -77,7 +76,7 @@ class Deck:
         return self._frame.shape().translate(0, 0, self.beam_height)
 
     @property
-    def _decking(self) -> Decking:
+    def _decking(self) -> Drawable:
         raise NotImplementedError
 
     def decking(self) -> ShapeCollection:
