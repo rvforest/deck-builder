@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING, Literal
 
 from point import Dim, Point3D
 from shapes import ShapeCollection
@@ -8,6 +8,8 @@ from util import n_members, oc_spacing, even_spacing
 
 if TYPE_CHECKING:
     from deck import Deck
+
+ZeroToTwo = Literal[0, 1, 2]
 
 
 class Frame:
@@ -20,7 +22,8 @@ class Frame:
             deck: Deck,
             loc: Point3D = Point3D(0, 0, 0),
             include_end_joist: Tuple[bool, bool] = (True, True),
-            include_rim_joist: Tuple[bool, bool] = (True, True)
+            include_rim_joist: Tuple[bool, bool] = (True, True),
+            n_rim_joist: Tuple[ZeroToTwo, ZeroToTwo] = (1, 1)
     ):
         self.width = width
         self.length = length
@@ -30,18 +33,17 @@ class Frame:
         self.loc = loc
         self.include_end_joist = include_end_joist
         self.include_rim_joist = include_rim_joist
+        self.n_rim_joist = n_rim_joist
 
         self.thickness = self.joist_class.height
 
     @property
     def joist_len(self) -> float:
-        # Subtract out two double rim joists
-        return self.length - 4 * self.joist_class.width
+        return self.length - sum(self.n_rim_joist) * self.joist_class.width
 
     @property
     def joist_y_start(self) -> float:
-        # Multiply by 2 for double rim joist
-        return 2 * self.joist_class.width
+        return self.n_rim_joist[0] * self.joist_class.width
 
     @property
     def n_joists(self) -> int:

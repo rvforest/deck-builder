@@ -11,30 +11,35 @@ from shapes import ShapeCollection
 
 
 class LDeckFrame:
-    def __init__(self, section1: DeckJoistsOnBlocks, section2: DeckJoistsOnBlocks, cutout_x: float, cutout_y: float):
+    def __init__(self, ldeck: LDeckOnBlocks):
+        self.ldeck = ldeck
+        section1 = ldeck.section1
+        section2 = ldeck.section2
         self.section1 = DeckBlockFrame(
             section1.width,
             section1.length,
-            max_joist_spacing=16,
-            deck=section1,
-            include_rim_joist=(True, False),
             block_overhang1=section1.block_overhang1,
             block_overhang2=section1.block_overhang2,
+            include_rim_joist=(True, False),
+            n_rim_joist=(1, 2),
+            max_joist_spacing=16,
+            deck=section1
         )
         self.section2 = DeckBlockFrame(
             section2.width,
             section2.length,
-            max_joist_spacing=16,
-            deck=section2,
-            include_rim_joist=(True, False),
-            include_end_joist=(False, True),
-            loc=Point3D(section1.width, cutout_y, 0),
             block_overhang1=section2.block_overhang1,
-            block_overhang2=section2.block_overhang2
+            block_overhang2=section2.block_overhang2,
+            include_rim_joist=(True, False),
+            n_rim_joist=(1, 2),
+            include_end_joist=(False, True),
+            loc=Point3D(section1.width, ldeck.cutout_y, 0),
+            max_joist_spacing=16,
+            deck=section2
         )
         self.thickness = self.section1.thickness
-        self.cutout_x = cutout_x
-        self.cutout_y = cutout_y
+        self.cutout_x = ldeck.cutout_x
+        self.cutout_y = ldeck.cutout_y
 
     def shape(self) -> ShapeCollection:
         return (
@@ -195,7 +200,7 @@ class LDeckOnBlocks(Deck):
 
     @property
     def _frame(self) -> LDeckFrame:
-        return LDeckFrame(self.section1, self.section2, self.cutout_x, self.cutout_y)
+        return LDeckFrame(self)
 
     def footings(self) -> ShapeCollection:
         n_joists2 = self._frame.section2.n_joists

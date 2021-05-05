@@ -17,14 +17,17 @@ class DeckBlockFrame(SingleSpanFrame):
             block_overhang1,
             block_overhang2,
             include_rim_joist=(True, True),
+            n_rim_joist=(1, 1),
             include_end_joist=(True, True),
             loc: Point3D = Point3D(0, 0, 0),
             **kwargs
     ):
         self.true_include_rim_joist = include_rim_joist
+        self.n_rim_joist = n_rim_joist
         self.true_include_end_joist = include_end_joist
         self.true_loc = loc
         kwargs['include_rim_joist'] = (False, False)
+        kwargs['n_rim_joist'] = n_rim_joist
         ej1 = ej2 = True
         if (block_overhang1 == 0) and (not include_end_joist[0]):
             ej1 = False
@@ -45,24 +48,31 @@ class DeckBlockFrame(SingleSpanFrame):
     def shape(self) -> ShapeCollection:
         s = super().shape()
         joist = self.joist_class
+
         if self.true_include_rim_joist[0]:
-            s += ShapeCollection([
-                joist(self.true_width, orient_towards=Dim.X, position=self.true_loc),
-                joist(self.true_width, orient_towards=Dim.X, position=self.true_loc + Point3D(0, joist.width, 0)),
-            ])
+            s += ShapeCollection([joist(self.true_width, orient_towards=Dim.X, position=self.true_loc)])
+            if self.n_rim_joist[0] == 2:
+                s += ShapeCollection([
+                    joist(self.true_width, orient_towards=Dim.X, position=self.true_loc + Point3D(0, joist.width, 0)),
+                ])
+
         if self.true_include_rim_joist[1]:
             s += ShapeCollection([
                 joist(
                     self.true_width,
                     orient_towards=Dim.X,
                     position=Point3D(0, self.length - joist.width, 0) + self.true_loc
-                ),
-                joist(
-                    self.true_width,
-                    orient_towards=Dim.X,
-                    position=Point3D(0, self.length - 2 * joist.width, 0) + self.true_loc
                 )
             ])
+            if self.n_rim_joist[1] == 2:
+                s += ShapeCollection([
+                    joist(
+                        self.true_width,
+                        orient_towards=Dim.X,
+                        position=Point3D(0, self.length - 2 * joist.width, 0) + self.true_loc
+                    )
+                ])
+
         if self.true_include_end_joist[0]:
             s += ShapeCollection([joist(
                 self.joist_len,
