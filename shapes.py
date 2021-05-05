@@ -105,9 +105,21 @@ class TrapezoidalPrism(Shape):
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
 
+        dxfattrib = {}
+        if self.layer:
+            dxfattrib['layer'] = self.layer
+
         if plane == Dim.Z:
-            # Top is always parallel to ground
-            path = trace_square(self.bottom_square_len, self.position.get_2d_point(plane), self.center)
+            # Draw top and bottom faces
+            path1 = trace_square(self.bottom_square_len, self.position.get_2d_point(plane), self.center)
+            path2 = trace_square(self.top_square_len, self.position.get_2d_point(plane), self.center)
+            msp.add_lwpolyline(path1, dxfattribs=dxfattrib)
+            msp.add_lwpolyline(path2, dxfattribs=dxfattrib)
+
+            # Connect top and bottom faces with line at each corner
+            corners = [(a, b) for a, b in zip(path1, path2)]
+            for corner in corners:
+                msp.add_lwpolyline(corner, dxfattribs=dxfattrib)
         else:
             # Other two sides are identical
             # Adjust so that height is not centered
@@ -125,10 +137,7 @@ class TrapezoidalPrism(Shape):
                 self.center,
                 h_invert
             )
-        dxfattrib = {}
-        if self.layer:
-            dxfattrib['layer'] = self.layer
-        msp.add_lwpolyline(path, dxfattribs=dxfattrib)
+            msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
     def _render_scad(self):
         scale = self.top_square_len / self.bottom_square_len
