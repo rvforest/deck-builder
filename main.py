@@ -1,9 +1,7 @@
 import solid as s
 
 from deck import LumberFactory, LumberSize
-from deck_joists_on_blocks import DeckJoistsOnBlocks
 from l_deck import LDeckOnBlocks
-from flush_beam_deck import FlushBeamDeck
 from footings import DeckBlockFactory
 from point import Dim
 from shapes import ShapeCollection
