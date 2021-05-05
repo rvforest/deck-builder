@@ -46,14 +46,22 @@ class DeckBlockFrame(SingleSpanFrame):
         s = super().shape()
         joist = self.joist_class
         if self.true_include_rim_joist[0]:
-            s += ShapeCollection([joist(self.true_width, orient_towards=Dim.X).translate(*self.true_loc)])
+            s += ShapeCollection([
+                joist(self.true_width, orient_towards=Dim.X, position=self.true_loc),
+                joist(self.true_width, orient_towards=Dim.X, position=self.true_loc + Point3D(0, joist.width, 0)),
+            ])
         if self.true_include_rim_joist[1]:
             s += ShapeCollection([
-                    joist(
-                        self.true_width,
-                        orient_towards=Dim.X,
-                        position=Point3D(0, self.length - joist.width, 0) + self.true_loc
-                    )
+                joist(
+                    self.true_width,
+                    orient_towards=Dim.X,
+                    position=Point3D(0, self.length - joist.width, 0) + self.true_loc
+                ),
+                joist(
+                    self.true_width,
+                    orient_towards=Dim.X,
+                    position=Point3D(0, self.length - 2 * joist.width, 0) + self.true_loc
+                )
             ])
         if self.true_include_end_joist[0]:
             s += ShapeCollection([joist(

@@ -35,11 +35,13 @@ class Frame:
 
     @property
     def joist_len(self) -> float:
-        return self.length - 2 * self.joist_class.width
+        # Subtract out two double rim joists
+        return self.length - 4 * self.joist_class.width
 
     @property
     def joist_y_start(self) -> float:
-        return self.joist_class.width
+        # Multiply by 2 for double rim joist
+        return 2 * self.joist_class.width
 
     @property
     def n_joists(self) -> int:

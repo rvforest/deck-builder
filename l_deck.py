@@ -44,6 +44,10 @@ class LDeckFrame:
                 self.section1.joist_class(
                     self.section1.true_width + self.section2.true_width,
                     position=Point3D(0, self.section1.length - self.section1.joist_class.width, 0)
+                ),
+                self.section1.joist_class(
+                    self.section1.true_width + self.section2.true_width,
+                    position=Point3D(0, self.section1.length - 2 * self.section1.joist_class.width, 0)
                 )
             ])
         )
