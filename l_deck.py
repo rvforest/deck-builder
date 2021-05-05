@@ -46,13 +46,21 @@ class LDeckFrame:
             self.section1.shape()
             + self.section2.shape()
             + ShapeCollection([
-                self.section1.joist_class(
+                self.section1.outer_joist_class(
                     self.section1.true_width + self.section2.true_width,
-                    position=Point3D(0, self.section1.length - self.section1.joist_class.width, 0)
+                    position=Point3D(
+                        0,
+                        self.section1.length - self.section1.joist_class.width,
+                        self.section1.outer_height_offset
+                    )
                 ),
-                self.section1.joist_class(
+                self.section1.outer_joist_class(
                     self.section1.true_width + self.section2.true_width,
-                    position=Point3D(0, self.section1.length - 2 * self.section1.joist_class.width, 0)
+                    position=Point3D(
+                        0,
+                        self.section1.length - 2 * self.section1.joist_class.width,
+                        self.section1.outer_height_offset
+                    )
                 )
             ])
         )
@@ -173,6 +181,7 @@ class LDeckOnBlocks(Deck):
             height=self.height,
             beam_class=self.beam_class,
             joist_class=self.joist_class,
+            outer_joist_class=self.outer_joist_class,
             decking_board_class=self.decking_board_class,
             footing_class=self.footing_class,
             joist_overhang=self.joist_overhang,
@@ -186,6 +195,7 @@ class LDeckOnBlocks(Deck):
             height=self.height,
             beam_class=self.beam_class,
             joist_class=self.joist_class,
+            outer_joist_class=self.outer_joist_class,
             decking_board_class=self.decking_board_class,
             footing_class=self.footing_class,
             joist_overhang=self.joist_overhang,

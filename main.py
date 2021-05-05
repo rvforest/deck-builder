@@ -11,18 +11,8 @@ from surroundings import Ground, House
 from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
-d = DeckJoistsOnBlocks(
-    width=234 - ft(3.5),
-    length=ft(16),
-    height=8,
-    beam_class=TwoBySix,
-    beam_overhang=6,
-    joist_class=TwoBySix,
-    decking_board_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
-    footing_class=DeckBlockFactory(),
-    block_overhang1=8,
-    block_overhang2=16
-)
+TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
+OneBySix = LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value)
 
 d2 = LDeckOnBlocks(
     width=240,
@@ -31,7 +21,8 @@ d2 = LDeckOnBlocks(
     beam_class=TwoBySix,
     beam_overhang=6,
     joist_class=TwoBySix,
-    decking_board_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
+    outer_joist_class=TwoByEight,
+    decking_board_class=OneBySix,
     footing_class=DeckBlockFactory(),
     cutout_x=ft(4),
     cutout_y=ft(5),
@@ -39,16 +30,6 @@ d2 = LDeckOnBlocks(
     block_overhang2=16,
     block_overhang3=8
 )
-#
-# d3 = FlushBeamDeck(
-#     width=ft(16),
-#     length=ft(16),
-#     height=8,
-#     beam_class=TwoBySix,
-#     joist_class=TwoBySix,
-#     decking__board_class=LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value),
-#     footing_class=DeckBlockFactory()
-# )
 deck_and_house = ShapeCollection([
     Ground(),
     House(),

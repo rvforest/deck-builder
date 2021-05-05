@@ -30,6 +30,8 @@ class Frame:
         self.max_joist_spacing = max_joist_spacing
         self.deck = deck
         self.joist_class = deck.joist_class
+        self.outer_joist_class = deck.outer_joist_class
+        self.outer_height_offset = self.joist_class.height - self.outer_joist_class.height
         self.loc = loc
         self.include_end_joist = include_end_joist
         self.include_rim_joist = include_rim_joist
@@ -39,11 +41,11 @@ class Frame:
 
     @property
     def joist_len(self) -> float:
-        return self.length - sum(self.n_rim_joist) * self.joist_class.width
+        return self.length - sum(self.n_rim_joist) * self.outer_joist_class.width
 
     @property
     def joist_y_start(self) -> float:
-        return self.n_rim_joist[0] * self.joist_class.width
+        return self.n_rim_joist[0] * self.outer_joist_class.width
 
     @property
     def n_joists(self) -> int:
@@ -68,15 +70,17 @@ class Frame:
 
         # Set rim joist
         if self.include_rim_joist[0]:
-            f.append(joist(self.width, orient_towards=Dim.X))
+            f.append(self.outer_joist_class(self.width, orient_towards=Dim.X, position=Point3D(
+                x=0, y=0, z=self.outer_height_offset
+            )))
 
         # Set joists
         row_position = self.joist_y_start
         if self.include_end_joist[0]:
-            f.append(joist(self.joist_len, orient_towards=Dim.Y).translate(
+            f.append(self.outer_joist_class(self.joist_len, orient_towards=Dim.Y).translate(
                 0,
                 row_position,
-                0
+                self.outer_height_offset
             ))
 
         n_joists = self.n_joists - 1
@@ -93,7 +97,13 @@ class Frame:
             row_position += self.joist_len + self.joist_row_offset
 
         if self.include_rim_joist[1]:
-            f.append(joist(self.width).translate(0, row_position - self.joist_class.width, 0))
+            f.append(
+                self.outer_joist_class(self.width).translate(
+                    x=0,
+                    y=row_position - self.joist_class.width,
+                    z=self.outer_height_offset
+                )
+            )
 
         return f.translate(*self.loc)
 

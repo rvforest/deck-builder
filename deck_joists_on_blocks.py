@@ -50,41 +50,57 @@ class DeckBlockFrame(SingleSpanFrame):
         joist = self.joist_class
 
         if self.true_include_rim_joist[0]:
-            s += ShapeCollection([joist(self.true_width, orient_towards=Dim.X, position=self.true_loc)])
+            s += ShapeCollection([
+                self.outer_joist_class(
+                    self.true_width,
+                    orient_towards=Dim.X,
+                    position=self.true_loc + Point3D(0, 0, self.outer_height_offset)
+                )
+            ])
             if self.n_rim_joist[0] == 2:
                 s += ShapeCollection([
-                    joist(self.true_width, orient_towards=Dim.X, position=self.true_loc + Point3D(0, joist.width, 0)),
+                    self.outer_joist_class(
+                        self.true_width,
+                        orient_towards=Dim.X,
+                        position=self.true_loc + Point3D(0, joist.width, self.outer_height_offset)
+                    ),
                 ])
 
         if self.true_include_rim_joist[1]:
             s += ShapeCollection([
-                joist(
+                self.outer_joist_class(
                     self.true_width,
                     orient_towards=Dim.X,
-                    position=Point3D(0, self.length - joist.width, 0) + self.true_loc
+                    position=Point3D(0, self.length - joist.width, self.outer_height_offset) + self.true_loc
                 )
             ])
             if self.n_rim_joist[1] == 2:
                 s += ShapeCollection([
-                    joist(
+                    self.outer_joist_class(
                         self.true_width,
                         orient_towards=Dim.X,
-                        position=Point3D(0, self.length - 2 * joist.width, 0) + self.true_loc
+                        position=Point3D(0, self.length - 2 * joist.width, self.outer_height_offset) + self.true_loc
                     )
                 ])
 
         if self.true_include_end_joist[0]:
-            s += ShapeCollection([joist(
-                self.joist_len,
-                orient_towards=Dim.Y,
-                position=self.true_loc + Point3D(0, self.joist_y_start, 0)
-            )])
-        if self.true_include_end_joist[1]:
             s += ShapeCollection([
-                joist(
+                self.outer_joist_class(
                     self.joist_len,
                     orient_towards=Dim.Y,
-                    position=self.true_loc + Point3D(self.true_width - joist.width, self.joist_y_start, 0)
+                    position=self.true_loc + Point3D(0, self.joist_y_start, self.outer_height_offset)
+                )
+            ])
+        if self.true_include_end_joist[1]:
+            s += ShapeCollection([
+                self.outer_joist_class(
+                    self.joist_len,
+                    orient_towards=Dim.Y,
+                    position=self.true_loc + Point3D(
+                        self.true_width - joist.width,
+                        self.joist_y_start,
+                        self.outer_height_offset
+                    )
                 )
             ])
 

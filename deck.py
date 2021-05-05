@@ -25,6 +25,7 @@ class Deck:
             height: float,
             beam_class: LumberFactory,
             joist_class: LumberFactory,
+            outer_joist_class: LumberFactory,
             decking_board_class: LumberFactory,
             footing_class: FootingFactory,
             joist_overhang: float = 16,
@@ -35,6 +36,7 @@ class Deck:
         self.height = height
         self.beam_class = beam_class
         self.joist_class = joist_class
+        self.outer_joist_class = outer_joist_class
         self.decking_board_class = decking_board_class
         self.footing_class = footing_class
         self.joist_overhang = joist_overhang
