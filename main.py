@@ -12,7 +12,7 @@ from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
 TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
-OneBySix = LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value)
+OneBySix = LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value, color=(164/256, 132/256, 96/256))
 
 d2 = LDeckOnBlocks(
     width=240,
@@ -33,7 +33,7 @@ d2 = LDeckOnBlocks(
 deck_and_house = ShapeCollection([
     Ground(),
     House(),
-    d2.all(show_decking=False)
+    d2.all(show_decking=True)
 ])
 s.scad_render_to_file(deck_and_house.render_scad(), 'foo.scad')
 write_dxf_doc(deck_and_house, Dim.Z, 'foo_top.dxf')

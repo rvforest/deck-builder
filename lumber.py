@@ -28,7 +28,8 @@ class Lumber(Cuboid):
             position: Point3D,
             layer: str = None,
             orient_towards: Dim = Dim.X,
-            draw_x: bool = True
+            draw_x: bool = True,
+            color=None
     ):
         self.width = width
         self.height = height
@@ -41,7 +42,7 @@ class Lumber(Cuboid):
             x, y = y, x
         elif orient_towards == Dim.Z:
             x, z = z, x
-        super().__init__(x, y, z, position, layer)
+        super().__init__(x, y, z, position, layer, color=color)
 
     def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
         # First draw Cuboid outline
@@ -68,15 +69,17 @@ class Lumber(Cuboid):
             self.length,
             position=self.position + Point3D(x, y, z),
             orient_towards=self.orient_towards,
-            layer=self.layer
+            layer=self.layer,
+            color=self.color
         )
 
 
 class LumberFactory:
-    def __init__(self, width: float, height: float, draw_x: bool = True):
+    def __init__(self, width: float, height: float, draw_x: bool = True, color=None):
         self.width = width
         self.height = height
         self.draw_x = draw_x
+        self.color = color
 
     def __call__(
             self,
@@ -85,7 +88,9 @@ class LumberFactory:
             layer: Optional[str] = None,
             orient_towards: Dim = Dim.X
     ) -> Lumber:
-        return Lumber(self.width, self.height, length, position, layer, orient_towards, draw_x=self.draw_x)
+        return Lumber(
+            self.width, self.height, length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color
+        )
 
 
 if __name__ == '__main__':

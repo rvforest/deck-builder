@@ -152,7 +152,8 @@ class LDecking:
                     x=-self.board_overhang,
                     y=self.n_boards2[0] * (board.width + self.w2w_gap) + self.ldeck.cutout_y - self.board_overhang,
                     z=0
-                )
+                ),
+                color=self.section1.decking_board_class.color
             )
         ])
         return boards
