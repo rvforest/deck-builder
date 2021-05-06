@@ -226,8 +226,10 @@ class LDeckOnBlocks(Deck):
         ])
         return self.section1.footings() + section2
 
-    def all(self, show_decking=True) -> ShapeCollection:
-        shape_collection = self.frame() + self.footings()
+    def all(self, show_decking=True, show_frame=False) -> ShapeCollection:
+        shape_collection = ShapeCollection([])
+        if show_frame:
+            shape_collection = self.frame() + self.footings()
         if show_decking:
             shape_collection += self.decking()
         return shape_collection
