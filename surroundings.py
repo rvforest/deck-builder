@@ -51,11 +51,13 @@ class Ground(Shape):
 class House(Cuboid):
 
     BLUE = (0.5, 0.5, 1)
-    WALL_START = -120
+    WALL_X_START = -120
     WALL_DECK_GAP = 1
     HOUSE_WALL_LEN = 40 * 12
     HOUSE_HEIGHT = 240
-    WALL_THICKNESS = 12
+    WALL_THICKNESS = 8
+    WALL_Y_START = -WALL_DECK_GAP - WALL_THICKNESS
+
     THRESHOLD_HEIGHT = 8
     GROUND_HEIGHT_AT_DOOR = -3.0
     DOOR_WIDTH = 36
@@ -72,7 +74,7 @@ class House(Cuboid):
     def __init__(self):
         super().__init__(
             self.HOUSE_WALL_LEN, self.WALL_THICKNESS, self.HOUSE_HEIGHT,
-            Point3D(self.WALL_START, -self.WALL_THICKNESS, -3)
+            Point3D(self.WALL_X_START, self.WALL_Y_START, -3)
         )
 
     def _render_scad(self) -> OpenSCADObject:
@@ -100,6 +102,9 @@ class House(Cuboid):
         return house
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
+        dxfattrib = {}
+        if self.layer:
+            dxfattrib['layer'] = self.layer
         if plane == Dim.Y:
             window = trace_rectangle(
                 House.WINDOW_WIDTH,
@@ -107,9 +112,6 @@ class House(Cuboid):
                 Point2D(-House.WINDOW_X_START, House.WINDOW_Z_START),
                 h_invert=True
             )
-            dxfattrib = {}
-            if self.layer:
-                dxfattrib['layer'] = self.layer
             msp.add_lwpolyline(window, dxfattribs=dxfattrib)
 
             door = trace_rectangle(
@@ -121,3 +123,43 @@ class House(Cuboid):
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
         else:
             super().render_dxf(plane, msp)
+            # Add Door
+            door_end = House.DOOR_START + House.DOOR_WIDTH
+            door_lines = [
+                (
+                    Point2D(House.DOOR_START, House.WALL_Y_START),
+                    Point2D(House.DOOR_START, House.WALL_Y_START + House.WALL_THICKNESS)
+                ),
+                (
+                    Point2D(door_end, House.WALL_Y_START),
+                    Point2D(door_end, House.WALL_Y_START + House.WALL_THICKNESS)
+                ),
+                # Door line
+                (
+                    Point2D(door_end, House.WALL_Y_START),
+                    Point2D(door_end - 25.5, House.WALL_Y_START - 25.5)
+                ),
+            ]
+            for line in door_lines:
+                msp.add_lwpolyline(line, dxfattribs=dxfattrib)
+
+            # Add window
+            window_end = House.WINDOW_X_START + House.WINDOW_WIDTH
+            window_half_y = House.WALL_Y_START + House.WALL_THICKNESS / 2
+            window_lines = [
+                (
+                    Point2D(House.WINDOW_X_START, House.WALL_Y_START),
+                    Point2D(House.WINDOW_X_START, House.WALL_Y_START + House.WALL_THICKNESS)
+                ),
+                (
+                    Point2D(window_end, House.WALL_Y_START),
+                    Point2D(window_end, House.WALL_Y_START + House.WALL_THICKNESS)
+                ),
+                # Mid point line
+                (
+                    Point2D(House.WINDOW_X_START, window_half_y),
+                    Point2D(window_end, window_half_y)
+                ),
+            ]
+            for line in window_lines:
+                msp.add_lwpolyline(line, dxfattribs=dxfattrib)
