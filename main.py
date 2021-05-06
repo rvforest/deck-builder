@@ -10,17 +10,17 @@ from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
 TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
-OneBySix = LumberFactory(LumberSize.SIX.value, LumberSize.ONE.value, color=(164/256, 132/256, 96/256))
+TrexBoard = LumberFactory(LumberSize.SIX.value, 0.94, color=(164 / 256, 132 / 256, 96 / 256))
 
 d2 = LDeckOnBlocks(
     width=240,
-    length=ft(16) - 3,
+    length=ft(16),
     height=8,
     beam_class=TwoBySix,
     beam_overhang=6,
     joist_class=TwoBySix,
     outer_joist_class=TwoByEight,
-    decking_board_class=OneBySix,
+    decking_board_class=TrexBoard,
     footing_class=DeckBlockFactory(),
     cutout_x=ft(4),
     cutout_y=ft(5),
