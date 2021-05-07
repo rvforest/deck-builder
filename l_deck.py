@@ -109,9 +109,8 @@ class LDecking:
     @property
     def n_boards1(self) -> Tuple[int, float]:
         result = self._n_boards(self.cutout_y - self.decking_start - self.board_overhang)
-        print(result)
-        # assert result % 1 == 0
-        return int(result) + 1, 0
+        assert result % 1 == 0
+        return int(result), 0
 
     @property
     def n_boards2(self) -> Tuple[int, float]:
@@ -119,7 +118,7 @@ class LDecking:
         return int(result), result % 1
 
     def shape(self) -> ShapeCollection:
-        board = self.ldeck.decking_board_class
+        board = self.ldeck.decking_board_class.copy()
         board.width = board.width + self.w2w_gap
         boards = ShapeCollection([
             # Section 1 - shorter decking span

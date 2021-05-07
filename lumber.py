@@ -92,6 +92,9 @@ class LumberFactory:
             self.width, self.height, length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color
         )
 
+    def copy(self):
+        return LumberFactory(self.width, self.height, self.draw_x, self.color)
+
 
 if __name__ == '__main__':
     import ezdxf
