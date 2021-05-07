@@ -14,7 +14,7 @@ TrexBoard = LumberFactory(LumberSize.SIX.value, 0.94, color=(164 / 256, 132 / 25
 
 d2 = LDeckOnBlocks(
     width=240,
-    length=ft(16),
+    length=ft(16) - 4.15,
     height=8,
     beam_class=TwoBySix,
     beam_overhang=6,

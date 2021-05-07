@@ -79,24 +79,29 @@ class LDecking:
         self.cutout_x = ldeck.cutout_x
         self.cutout_y = ldeck.cutout_y
 
+        self._w2w_gap = None
+
     @property
     def w2w_gap(self):
-        board = self.ldeck.decking_board_class
-        len_to_deck = self.cutout_y - LDecking.decking_start - self.board_overhang
-        n_boards = math.floor(len_to_deck / board.width)
-        gap = (len_to_deck - board.width * n_boards) / n_boards
-
-        if gap < Decking.w2w_gap_min:
-            n_boards -= 1
+        if self._w2w_gap is None:
+            board = self.ldeck.decking_board_class
+            len_to_deck = self.cutout_y - LDecking.decking_start - self.board_overhang
+            n_boards = math.floor(len_to_deck / board.width)
             gap = (len_to_deck - board.width * n_boards) / n_boards
 
-        if gap > Decking.w2w_gap_max:
-            raise ValueError(
-                'Could not find gap to match deck dimensions. '
-                f'Required gap is {gap:.2f}" but max gap size is {Decking.w2w_gap_max}"'
-            )
+            if gap < Decking.w2w_gap_min:
+                n_boards -= 1
+                gap = (len_to_deck - board.width * n_boards) / n_boards
 
-        return gap
+            if gap > Decking.w2w_gap_max:
+                raise ValueError(
+                    'Could not find gap to match deck dimensions. '
+                    f'Required gap is {gap:.2f}" but max gap size is {Decking.w2w_gap_max}"'
+                )
+
+            self._w2w_gap = gap
+
+        return self._w2w_gap
 
     def _n_boards(self, length: float) -> float:
         return length / (self.section1.decking_board_class.width + self.w2w_gap)
@@ -104,8 +109,9 @@ class LDecking:
     @property
     def n_boards1(self) -> Tuple[int, float]:
         result = self._n_boards(self.cutout_y - self.decking_start - self.board_overhang)
-        assert result % 1 == 0
-        return int(result), 0
+        print(result)
+        # assert result % 1 == 0
+        return int(result) + 1, 0
 
     @property
     def n_boards2(self) -> Tuple[int, float]:
@@ -114,6 +120,7 @@ class LDecking:
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class
+        board.width = board.width + self.w2w_gap
         boards = ShapeCollection([
             # Section 1 - shorter decking span
             board(
@@ -121,7 +128,7 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang,
-                    y=i * (board.width + self.w2w_gap) + LDecking.decking_start,
+                    y=i * board.width + LDecking.decking_start,
                     z=0
                 )
             )
@@ -135,7 +142,7 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang,
-                    y=i * (board.width + self.w2w_gap) + self.ldeck.cutout_y - self.board_overhang,
+                    y=i * board.width + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
@@ -150,7 +157,7 @@ class LDecking:
                 length=self.ldeck.width + 2 * self.board_overhang,
                 position=Point3D(
                     x=-self.board_overhang,
-                    y=self.n_boards2[0] * (board.width + self.w2w_gap) + self.ldeck.cutout_y - self.board_overhang,
+                    y=self.n_boards2[0] * board.width + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 ),
                 color=self.section1.decking_board_class.color
