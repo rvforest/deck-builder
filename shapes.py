@@ -61,7 +61,7 @@ class Cuboid(Shape):
     def _render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def _get_path(self, plane: Dim):
         args = [self.lengths[d.value] for d in Dim if d != plane]
         position_2d = self.position.get_2d_point(plane)
         if plane == Dim.Y:
@@ -69,7 +69,11 @@ class Cuboid(Shape):
             h_invert = True
         else:
             h_invert = False
-        path = trace_rectangle(args[0], args[1], position_2d, h_invert=h_invert)
+
+        return trace_rectangle(args[0], args[1], position_2d, h_invert=h_invert)
+
+    def render_dxf(self, plane: Dim, msp: Modelspace):
+        path = self._get_path(plane)
 
         dxfattrib = {}
         if self.layer:
