@@ -57,18 +57,34 @@ class Lumber(Cuboid):
         super().render_dxf(plane, msp)
 
         # Next draw X if lumber goes into page
+        dxfattribs = {'layer': self.layer.value}
         if plane == self.orient_towards:
             position_2d = self.position.get_2d_point(plane)
             if plane == Dim.Y:
                 position_2d = position_2d.h_invert()
                 if self.draw_x:
-                    msp.add_line(position_2d, position_2d + Point2D(self.width, self.height).h_invert())
-                    msp.add_line(position_2d + Point2D(0, self.height).h_invert(),
-                                 position_2d + Point2D(self.width, 0).h_invert())
+                    msp.add_line(
+                        position_2d,
+                        position_2d + Point2D(self.width, self.height).h_invert(),
+                        dxfattribs=dxfattribs
+                    )
+                    msp.add_line(
+                        position_2d + Point2D(0, self.height).h_invert(),
+                        position_2d + Point2D(self.width, 0).h_invert(),
+                        dxfattribs=dxfattribs
+                    )
             else:
                 if self.draw_x:
-                    msp.add_line(position_2d, position_2d + Point2D(self.width, self.height))
-                    msp.add_line(position_2d + Point2D(0, self.height), position_2d + Point2D(self.width, 0))
+                    msp.add_line(
+                        position_2d,
+                        position_2d + Point2D(self.width, self.height),
+                        dxfattribs=dxfattribs
+                    )
+                    msp.add_line(
+                        position_2d + Point2D(0, self.height),
+                        position_2d + Point2D(self.width, 0),
+                        dxfattribs=dxfattribs
+                    )
 
     def translate(self, x: float, y: float, z: float) -> Lumber:
         return Lumber(
@@ -230,10 +246,10 @@ class LumberFactory:
 
 class DeckingFactory(LumberFactory):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, width: float, height: float, draw_x: bool = True, color=None):
         self._w2w_gap = None
         self._e2e_gap = None
-        super().__init__(*args, **kwargs)
+        super().__init__(width, height, draw_x, color)
 
     @property
     def w2w_gap(self):
