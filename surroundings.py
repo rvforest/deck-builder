@@ -45,6 +45,10 @@ class Ground(Shape):
             end = Ground.ground_points[1]
             msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs=dxfattribs)
 
+            start = Ground.ground_points[2]
+            end = Ground.ground_points[3]
+            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs=dxfattribs)
+
     def translate(self, x: float, y: float, z: float) -> Shape:
         print('Warning: Ground cannot be moved. No change was made.')
         return self
