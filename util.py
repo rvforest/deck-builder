@@ -6,6 +6,7 @@ import ezdxf
 from ezdxf.layouts import Modelspace
 import solid as s
 
+from layers import Layer
 from point import Point3D
 from shapes import Dim, Shape, ShapeCollection
 
@@ -22,7 +23,9 @@ class DXFWritable(Protocol):
 
 
 def write_dxf_doc(obj: DXFWritable, plane: Dim, filename: str):
-    doc = ezdxf.new(dxfversion='AC1024')
+    doc = ezdxf.new()
+    for layer in Layer:
+        doc.layers.new(name=layer.value)
     modelspace = doc.modelspace()
     obj.render_dxf(plane, modelspace)
     doc.saveas(filename)

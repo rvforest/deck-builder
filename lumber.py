@@ -7,6 +7,7 @@ import solid as s
 import solid.utils as su
 from solid import OpenSCADObject
 
+from layers import Layer
 from shapes import Cuboid, Dim
 from point import Point2D, Point3D
 
@@ -45,6 +46,10 @@ class Lumber(Cuboid):
             x, y = y, x
         elif orient_towards == Dim.Z:
             x, z = z, x
+
+        if layer is None:
+            layer = Layer.FRAME
+
         super().__init__(x, y, z, position, layer, color=color)
 
     def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
@@ -96,6 +101,8 @@ class MiteredBoard(Lumber):
     ):
         self.start_miter = start_miter
         self.end_miter = end_miter
+        if layer is None:
+            layer = Layer.DECKING
         super(MiteredBoard, self).__init__(width, height, length, position, layer, orient_towards, draw_x, color)
 
     def _get_path(self, plane: Dim):
@@ -154,10 +161,26 @@ class MiteredBoard(Lumber):
 
 class DeckingBoard(Lumber):
 
-    def __init__(self, w2w_gap, e2e_gap, *args, **kwargs):
+    def __init__(
+            self,
+            w2w_gap: float,
+            e2e_gap: float,
+            width: float,
+            height: float,
+            length: float,
+            position: Point3D,
+            layer: str = None,
+            orient_towards: Dim = Dim.X,
+            draw_x: bool = True,
+            color=None
+    ):
         self.w2w_gap = w2w_gap
         self.e2e_gap = e2e_gap
-        super().__init__(*args, **kwargs)
+
+        if layer is None:
+            layer = Layer.DECKING
+
+        super().__init__(width, height, length, position, layer, orient_towards, draw_x, color)
 
     def _get_path(self, plane: Dim):
         """Don't draw decking gaps in DXF file"""

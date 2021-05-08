@@ -1,5 +1,6 @@
 from typing import Optional
 
+from layers import Layer
 from point import Point3D
 from shapes import Shape, TrapezoidalPrism
 
@@ -8,7 +9,7 @@ class FootingFactory:
 
     height: float
 
-    def __call__(self, position: Optional[Point3D] = None, layer: Optional[str] = None) -> Shape:
+    def __call__(self, position: Optional[Point3D] = None) -> Shape:
         raise NotImplementedError
 
 
@@ -29,12 +30,12 @@ class DeckBlockFactory(FootingFactory):
         self.height = block_slot_height
         self.block_scale = self.block_top_len / self.block_base_len
 
-    def __call__(self, position: Optional[Point3D] = None, layer: Optional[str] = None) -> TrapezoidalPrism:
+    def __call__(self, position: Optional[Point3D] = None) -> TrapezoidalPrism:
         return TrapezoidalPrism(
             bottom_square_len=self.block_base_len,
             top_square_len=self.block_top_len,
             height=self.block_height,
             position=position,
-            layer=layer,
+            layer=Layer.FOOTINGS,
             color=(0.5, 0.5, 0.5)
         )

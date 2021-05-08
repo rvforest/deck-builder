@@ -7,13 +7,14 @@ import solid as s
 import solid.utils as su
 from solid.solidpython import OpenSCADObject
 
+from layers import Layer
 from paths import trace_rectangle, trace_square, trace_isosceles_trapezoid
 from point import Dim, Point2D, Point3D
 
 
 class Shape(Protocol):
     position: Optional[Point3D]
-    layer: Optional[str]
+    layer: Optional[Layer]
     height: float
     color: Optional[Tuple[float, float, float]]
 
@@ -45,7 +46,7 @@ class Cuboid(Shape):
             y_len: float,
             z_len: float,
             position: Optional[Point3D] = None,
-            layer: str = None,
+            layer: Layer = None,
             color: Optional[Tuple[float, float, float]] = None
     ):
         self.x_len = x_len
@@ -77,7 +78,7 @@ class Cuboid(Shape):
 
         dxfattrib = {}
         if self.layer:
-            dxfattrib['layer'] = self.layer
+            dxfattrib['layer'] = self.layer.value
         msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
     def translate(self, x: float, y: float, z: float) -> Cuboid:
@@ -96,7 +97,7 @@ class TrapezoidalPrism(Shape):
             height: float,
             center: bool = True,
             position: Optional[Point3D] = None,
-            layer: str = None,
+            layer: Layer = None,
             color: Tuple[float, float, float] = None
     ):
         self.top_square_len = top_square_len
@@ -111,7 +112,7 @@ class TrapezoidalPrism(Shape):
 
         dxfattrib = {}
         if self.layer:
-            dxfattrib['layer'] = self.layer
+            dxfattrib['layer'] = self.layer.value
 
         if plane == Dim.Z:
             # Draw top and bottom faces
