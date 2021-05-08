@@ -81,6 +81,8 @@ class LDecking:
         self.cutout_y = ldeck.cutout_y
 
         self._w2w_gap = None
+        self._n_boards1 = None
+        self._n_boards2 = None
 
     @property
     def w2w_gap(self):
@@ -101,6 +103,7 @@ class LDecking:
                 )
 
             self._w2w_gap = gap
+            print(f'Width-to-width decking gap: {gap:.3f}"')
 
         return self._w2w_gap
 
@@ -109,24 +112,30 @@ class LDecking:
 
     @property
     def n_boards1(self) -> Tuple[int, float]:
-        result = self._n_boards(
-            self.cutout_y - self.decking_start - self.board_overhang
-            + self.section1.decking_board_class.width + self.w2w_gap
-        )
-        assert result % 1 == 0
-        return int(result), 0
+        if self._n_boards1 is None:
+            result = self._n_boards(
+                self.cutout_y - self.decking_start - self.board_overhang
+                + self.section1.decking_board_class.width + self.w2w_gap
+            )
+            assert result % 1 == 0
+            print(f"{int(result)} boards in section 1")
+            self._n_boards1 = int(result), 0
+        return self._n_boards1
 
     @property
     def n_boards2(self) -> Tuple[int, float]:
-        result = self._n_boards(
-            self.ldeck.section2.length
-            + 2 * self.board_overhang
-            - 2 * self.ldeck.decking_board_class.width
-            - 1 * self.w2w_gap
-        )
-        print(result)
-        last_board_width = (result % 1) * (self.ldeck.decking_board_class.width + self.w2w_gap) - self.w2w_gap
-        return int(result), last_board_width
+        if self._n_boards2 is None:
+            result = self._n_boards(
+                self.ldeck.section2.length
+                + 2 * self.board_overhang
+                - 2 * self.ldeck.decking_board_class.width
+                - 1 * self.w2w_gap
+            )
+            last_board_width = (result % 1) * (self.ldeck.decking_board_class.width + self.w2w_gap) - self.w2w_gap
+            print(f"{int(result)} boards in section 2")
+            print(f'Last board ripped to {last_board_width:0.2f}".')
+            self._n_boards2 = int(result), last_board_width
+        return self._n_boards2
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class.copy()
