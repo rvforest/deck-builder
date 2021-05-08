@@ -131,6 +131,13 @@ class MiteredBoard(Lumber):
 
         return path
 
+    def _render_scad(self) -> OpenSCADObject:
+        return su.translate(tuple(self.position))(
+            s.linear_extrude(self.height)(
+                s.polygon([p - self.position.get_2d_point(Dim.Z) for p in self._get_path(Dim.Z)])
+            )
+        )
+
     def translate(self, x: float, y: float, z: float) -> Lumber:
         return MiteredBoard(
             self.width,
