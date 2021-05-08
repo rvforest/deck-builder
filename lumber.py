@@ -201,10 +201,14 @@ class DeckingBoard(Lumber):
     def _get_path(self, plane: Dim):
         """Don't draw decking gaps in DXF file"""
         path = super()._get_path(plane)
-        # Assume decking is always oriented in X direction
-        far_edge_idxs = (2, 3)
-        for idx in far_edge_idxs:
-            path[idx] += Point2D(0, self.w2w_gap)
+
+        # Hide gaps in top down view
+        if plane == Dim.Z:
+            # Assume decking is always oriented in X direction
+            far_edge_idxs = (2, 3)
+            for idx in far_edge_idxs:
+                path[idx] += Point2D(0, self.w2w_gap)
+
         return path
 
     def translate(self, x: float, y: float, z: float) -> DeckingBoard:
