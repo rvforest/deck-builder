@@ -34,7 +34,7 @@ class Ground(Shape):
         return s.polyhedron(Ground.ground_points, Ground.ground_faces)
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
-        dxfattribs = {'layer': Layer.GROUND}
+        dxfattribs = {'layer': Layer.GROUND.value}
         if plane == Dim.Z:
             pass
         elif plane == Dim.X:
@@ -43,7 +43,7 @@ class Ground(Shape):
         elif plane == Dim.Y:
             start = Ground.ground_points[0]
             end = Ground.ground_points[1]
-            msp.add_line((start[0], start[-1]), (end[0], end[-1]), dxfattribs=dxfattribs)
+            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs=dxfattribs)
 
     def translate(self, x: float, y: float, z: float) -> Shape:
         print('Warning: Ground cannot be moved. No change was made.')
