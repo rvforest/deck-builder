@@ -31,7 +31,7 @@ d2 = LDeckOnBlocks(
 deck_and_house = ShapeCollection([
     Ground(),
     House(),
-    d2.all(show_decking=True)
+    d2.all(show_decking=True, show_frame=True)
 ])
 s.scad_render_to_file(deck_and_house.render_scad(), 'foo.scad')
 write_dxf_doc(deck_and_house, Dim.Z, 'foo_top.dxf')

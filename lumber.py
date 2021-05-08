@@ -131,8 +131,18 @@ class MiteredBoard(Lumber):
 
         return path
 
-    def _render_scad(self) -> OpenSCADObject:
-        pass
+    def translate(self, x: float, y: float, z: float) -> Lumber:
+        return MiteredBoard(
+            self.width,
+            self.height,
+            self.length,
+            position=self.position + Point3D(x, y, z),
+            orient_towards=self.orient_towards,
+            layer=self.layer,
+            color=self.color,
+            start_miter=self.start_miter,
+            end_miter=self.end_miter
+        )
 
 
 class LumberFactory:
@@ -166,7 +176,7 @@ if __name__ == '__main__':
     TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
     boards = [
         # TwoBySix(ft(10), Point3D(0, 0, 0))
-        MiteredBoard(3.5, 1.5, ft(3), Point3D(0, 0, 0), orient_towards=Dim.X, start_miter='down', end_miter='down')
+        MiteredBoard(3.5, 1.5, ft(3), Point3D(0, 0, 0), orient_towards=Dim.Y, end_miter='down')
     ]
     for b in boards:
         b.render_dxf(Dim.Z, modelspace)

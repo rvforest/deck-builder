@@ -5,7 +5,7 @@ from typing import Tuple
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
-from lumber import Lumber
+from lumber import Lumber, MiteredBoard
 from point import Point3D, Dim
 from shapes import ShapeCollection
 
@@ -108,25 +108,36 @@ class LDecking:
 
     @property
     def n_boards1(self) -> Tuple[int, float]:
-        result = self._n_boards(self.cutout_y - self.decking_start - self.board_overhang)
+        result = self._n_boards(
+            self.cutout_y - self.decking_start - self.board_overhang
+            + self.section1.decking_board_class.width + self.w2w_gap
+        )
         assert result % 1 == 0
         return int(result), 0
 
     @property
     def n_boards2(self) -> Tuple[int, float]:
-        result = self._n_boards(self.ldeck.length - self.cutout_y + self.w2w_gap + 2 * self.board_overhang)
+        result = self._n_boards(
+            self.ldeck.length
+            - self.cutout_y
+            + 2 * self.board_overhang
+            - self.ldeck.decking_board_class.width
+            - self.w2w_gap
+        )
         return int(result), result % 1
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class.copy()
         board.width = board.width + self.w2w_gap
+
+        section1_len = self.ldeck.width - self.ldeck.cutout_x + 2 * self.board_overhang - 2 * board.width
         boards = ShapeCollection([
             # Section 1 - shorter decking span
             board(
-                self.ldeck.width - self.ldeck.cutout_x + 2 * self.board_overhang,
+                section1_len,
                 orient_towards=Dim.X,
                 position=Point3D(
-                    x=-self.board_overhang,
+                    x=-self.board_overhang + board.width,
                     y=i * board.width + LDecking.decking_start,
                     z=0
                 )
@@ -137,15 +148,15 @@ class LDecking:
         # Section 2 - longer decking span
         boards += ShapeCollection([
             board(
-                self.ldeck.width + 2 * self.board_overhang,
+                self.ldeck.width + 2 * self.board_overhang - 2 * board.width,
                 orient_towards=Dim.X,
                 position=Point3D(
-                    x=-self.board_overhang,
+                    x=-self.board_overhang + board.width,
                     y=i * board.width + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
-            for i in range(self.n_boards2[0])
+            for i in range(1, self.n_boards2[0])
         ])
 
         # Final board needs to be ripped
@@ -153,14 +164,78 @@ class LDecking:
             Lumber(
                 width=board.width * self.n_boards2[1],
                 height=board.height,
-                length=self.ldeck.width + 2 * self.board_overhang,
+                length=self.ldeck.width + 2 * self.board_overhang - 2 * board.width,
                 position=Point3D(
-                    x=-self.board_overhang,
+                    x=-self.board_overhang + board.width,
                     y=self.n_boards2[0] * board.width + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 ),
                 color=self.section1.decking_board_class.color
             )
+        ])
+
+        # picture frame
+        boards += ShapeCollection([
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.ldeck.length + self.board_overhang - LDecking.decking_start,
+                position=Point3D(-self.board_overhang, LDecking.decking_start, 0),
+                orient_towards=Dim.Y,
+                end_miter='down'
+            ),
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.ldeck.width + 2 * self.board_overhang,
+                position=Point3D(
+                    -self.board_overhang,
+                    self.ldeck.length + self.board_overhang - board.width,
+                    0
+                ),
+                orient_towards=Dim.X,
+                start_miter='down',
+                end_miter='down'
+            ),
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.ldeck.section2.length + 2 * self.board_overhang,
+                position=Point3D(
+                    -self.board_overhang + self.ldeck.width + 2 * self.board_overhang - board.width,
+                    self.cutout_y - self.board_overhang,
+                    0
+                ),
+                orient_towards=Dim.Y,
+                start_miter='up',
+                end_miter='up'
+            ),
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.cutout_x + board.width,
+                position=Point3D(
+                    -self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - board.width,
+                    self.cutout_y - self.board_overhang,
+                    0
+                ),
+                orient_towards=Dim.X,
+                start_miter='down',
+                end_miter='up'
+            ),
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.cutout_y - self.board_overhang + board.width - LDecking.decking_start,
+                position=Point3D(
+                    -self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - board.width,
+                    LDecking.decking_start,
+                    0
+                ),
+                orient_towards=Dim.Y,
+                start_miter=None,
+                end_miter='down'
+            ),
         ])
         return boards
 
