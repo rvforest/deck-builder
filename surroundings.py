@@ -125,7 +125,7 @@ class House(Cuboid):
                 h_invert=True
             )
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
-        else:
+        elif plane == Dim.Z:
             super().render_dxf(plane, msp)
             # Add Door
             door_end = House.DOOR_START + House.DOOR_WIDTH
