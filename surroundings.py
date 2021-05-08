@@ -125,7 +125,7 @@ class House(Cuboid):
             door = trace_rectangle(
                 House.DOOR_WIDTH,
                 House.DOOR_HEIGHT,
-                Point2D(-House.DOOR_START, House.THRESHOLD_HEIGHT),
+                Point2D(-House.DOOR_START, House.THRESHOLD_HEIGHT + House.GROUND_HEIGHT_AT_DOOR),
                 h_invert=True
             )
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
