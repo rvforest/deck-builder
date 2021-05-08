@@ -5,7 +5,7 @@ from typing import Tuple
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
-from lumber import Lumber, MiteredBoard
+from lumber import MiteredBoard, DeckingBoard
 from point import Point3D, Dim
 from shapes import ShapeCollection
 
@@ -70,6 +70,7 @@ class LDecking:
 
     decking_start = 0.5
     board_overhang = 1
+    e2e_gap = 1 / 8
 
     def __init__(self, ldeck: LDeckOnBlocks):
         self.ldeck = ldeck
@@ -128,7 +129,9 @@ class LDecking:
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class.copy()
-        board.width = board.width + self.w2w_gap
+        board.w2w_gap = self.w2w_gap
+        board.e2e_gap = self.e2e_gap
+        board_spacing = board.width + self.w2w_gap
 
         section1_len = self.ldeck.width - self.ldeck.cutout_x + 2 * self.board_overhang - 2 * board.width
         boards = ShapeCollection([
@@ -138,7 +141,7 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang + board.width,
-                    y=i * board.width + LDecking.decking_start,
+                    y=i * board_spacing + LDecking.decking_start,
                     z=0
                 )
             )
@@ -152,7 +155,7 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang + board.width,
-                    y=i * board.width + self.ldeck.cutout_y - self.board_overhang,
+                    y=i * board_spacing + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
@@ -161,13 +164,15 @@ class LDecking:
 
         # Final board needs to be ripped
         boards += ShapeCollection([
-            Lumber(
+            DeckingBoard(
+                self.w2w_gap,
+                self.e2e_gap,
                 width=board.width * self.n_boards2[1],
                 height=board.height,
                 length=self.ldeck.width + 2 * self.board_overhang - 2 * board.width,
                 position=Point3D(
                     x=-self.board_overhang + board.width,
-                    y=self.n_boards2[0] * board.width + self.ldeck.cutout_y - self.board_overhang,
+                    y=self.n_boards2[0] * board_spacing + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 ),
                 color=self.section1.decking_board_class.color

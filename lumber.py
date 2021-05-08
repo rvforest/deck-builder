@@ -152,7 +152,38 @@ class MiteredBoard(Lumber):
         )
 
 
+class DeckingBoard(Lumber):
+
+    def __init__(self, w2w_gap, e2e_gap, *args, **kwargs):
+        self.w2w_gap = w2w_gap
+        self.e2e_gap = e2e_gap
+        super().__init__(*args, **kwargs)
+
+    def _get_path(self, plane: Dim):
+        """Don't draw decking gaps in DXF file"""
+        path = super()._get_path(plane)
+        # Assume decking is always oriented in X direction
+        far_edge_idxs = (2, 3)
+        for idx in far_edge_idxs:
+            path[idx] += Point2D(0, self.w2w_gap)
+        return path
+
+    def translate(self, x: float, y: float, z: float) -> DeckingBoard:
+        return DeckingBoard(
+            self.w2w_gap,
+            self.e2e_gap,
+            self.width,
+            self.height,
+            self.length,
+            position=self.position + Point3D(x, y, z),
+            orient_towards=self.orient_towards,
+            layer=self.layer,
+            color=self.color
+        )
+
+
 class LumberFactory:
+
     def __init__(self, width: float, height: float, draw_x: bool = True, color=None):
         self.width = width
         self.height = height
@@ -171,7 +202,49 @@ class LumberFactory:
         )
 
     def copy(self):
-        return LumberFactory(self.width, self.height, self.draw_x, self.color)
+        return type(self)(self.width, self.height, self.draw_x, self.color)
+
+
+class DeckingFactory(LumberFactory):
+
+    def __init__(self, *args, **kwargs):
+        self._w2w_gap = None
+        self._e2e_gap = None
+        super().__init__(*args, **kwargs)
+
+    @property
+    def w2w_gap(self):
+        if self._w2w_gap is not None:
+            return self._w2w_gap
+        else:
+            raise AttributeError("DeckingFactory.w2w_gap must be set by user before accessing.")
+
+    @w2w_gap.setter
+    def w2w_gap(self, val):
+        self._w2w_gap = val
+
+    @property
+    def e2e_gap(self):
+        if self._e2e_gap is not None:
+            return self._e2e_gap
+        else:
+            raise AttributeError("DeckingFactory.e2e_gap must be set by user before accessing.")
+
+    @e2e_gap.setter
+    def e2e_gap(self, val):
+        self._e2e_gap = val
+
+    def __call__(
+            self,
+            length: float,
+            position: Optional[Point3D] = None,
+            layer: Optional[str] = None,
+            orient_towards: Dim = Dim.X
+    ) -> DeckingBoard:
+        return DeckingBoard(
+            self.w2w_gap, self.e2e_gap, self.width, self.height,
+            length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color
+        )
 
 
 if __name__ == '__main__':

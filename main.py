@@ -3,6 +3,7 @@ import solid as s
 from deck import LumberFactory, LumberSize
 from l_deck import LDeckOnBlocks
 from footings import DeckBlockFactory
+from lumber import DeckingFactory
 from point import Dim
 from shapes import ShapeCollection
 from surroundings import Ground, House
@@ -10,7 +11,7 @@ from util import ft, write_dxf_doc
 
 TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
 TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
-TrexBoard = LumberFactory(LumberSize.SIX.value, 0.94, color=(164 / 256, 132 / 256, 96 / 256))
+TrexBoard = DeckingFactory(LumberSize.SIX.value, 0.94, color=(164 / 256, 132 / 256, 96 / 256))
 
 d2 = LDeckOnBlocks(
     width=240,
