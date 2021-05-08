@@ -119,13 +119,14 @@ class LDecking:
     @property
     def n_boards2(self) -> Tuple[int, float]:
         result = self._n_boards(
-            self.ldeck.length
-            - self.cutout_y
+            self.ldeck.section2.length
             + 2 * self.board_overhang
-            - self.ldeck.decking_board_class.width
-            - self.w2w_gap
+            - 2 * self.ldeck.decking_board_class.width
+            - 1 * self.w2w_gap
         )
-        return int(result), result % 1
+        print(result)
+        last_board_width = (result % 1) * (self.ldeck.decking_board_class.width + self.w2w_gap) - self.w2w_gap
+        return int(result), last_board_width
 
     def shape(self) -> ShapeCollection:
         board = self.ldeck.decking_board_class.copy()
@@ -155,11 +156,11 @@ class LDecking:
                 orient_towards=Dim.X,
                 position=Point3D(
                     x=-self.board_overhang + board.width,
-                    y=i * board_spacing + self.ldeck.cutout_y - self.board_overhang,
+                    y=(i + 1) * board_spacing + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
             )
-            for i in range(1, self.n_boards2[0])
+            for i in range(self.n_boards2[0])
         ])
 
         # Final board needs to be ripped
@@ -167,12 +168,12 @@ class LDecking:
             DeckingBoard(
                 self.w2w_gap,
                 self.e2e_gap,
-                width=board.width * self.n_boards2[1],
+                width=self.n_boards2[1],
                 height=board.height,
                 length=self.ldeck.width + 2 * self.board_overhang - 2 * board.width,
                 position=Point3D(
                     x=-self.board_overhang + board.width,
-                    y=self.n_boards2[0] * board_spacing + self.ldeck.cutout_y - self.board_overhang,
+                    y=(self.n_boards2[0] + 1) * board_spacing + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 ),
                 color=self.section1.decking_board_class.color
