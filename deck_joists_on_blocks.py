@@ -7,6 +7,7 @@ from point import Point3D, Dim
 from surroundings import Ground, House
 from lumber import LumberSize
 from shapes import ShapeCollection
+from util import n_members
 
 
 class DeckBlockFrame(SingleSpanFrame):
@@ -106,60 +107,36 @@ class DeckBlockFrame(SingleSpanFrame):
 
         # Blocking on overhang
         if self.block_overhang1 > 0:
+            len_between_outer_footings = self.length - 2 * self.deck.joist_overhang - joist.width
+            n_blocking_boards = n_members(len_between_outer_footings, joist.width, 16)
+            blocking_spacing = len_between_outer_footings / n_blocking_boards
             s += ShapeCollection([
                 joist(
                     self.block_overhang1 - joist.width,
                     orient_towards=Dim.X,
-                    position=Point3D(joist.width, self.deck.joist_overhang - joist.width / 2, 0)
-                ),
-                joist(
-                    self.block_overhang1 - joist.width,
-                    orient_towards=Dim.X,
-                    position=self.true_loc + self.true_loc + self.true_loc + self.true_loc + Point3D(
+                    position=Point3D(
                         joist.width,
-                        (self.length - 2 * self.deck.joist_overhang) / 2 + self.deck.joist_overhang - joist.width,
-                        0
-                    )
-                ),
-                joist(
-                    self.block_overhang1 - joist.width,
-                    orient_towards=Dim.X,
-                    position=self.true_loc + Point3D(
-                        joist.width,
-                        self.length - self.deck.joist_overhang - 3/2 * joist.width,
+                        self.deck.joist_overhang - joist.width / 2 + n * blocking_spacing,
                         0
                     )
                 )
+                for n in range(n_blocking_boards + 1)
             ])
         if self.block_overhang2 > 0:
+            len_between_outer_footings = self.length - 2 * self.deck.joist_overhang - joist.width
+            n_blocking_boards = n_members(len_between_outer_footings, joist.width, 16)
+            blocking_spacing = len_between_outer_footings / n_blocking_boards
             s += ShapeCollection([
                 joist(
                     self.block_overhang2 - joist.width,
                     orient_towards=Dim.X,
                     position=self.true_loc + Point3D(
                         self.true_width - self.block_overhang2,
-                        self.deck.joist_overhang - joist.width / 2,
+                        self.deck.joist_overhang - joist.width / 2 + n * blocking_spacing,
                         0
                     )
-                ),
-                joist(
-                    self.block_overhang2 - joist.width,
-                    orient_towards=Dim.X,
-                    position=self.true_loc + Point3D(
-                        self.true_width - self.block_overhang2,
-                        (self.length - 2 * self.deck.joist_overhang) / 2 + self.deck.joist_overhang - joist.width,
-                        0
-                    )
-                ),
-                joist(
-                    self.block_overhang2 - joist.width,
-                    orient_towards=Dim.X,
-                    position=self.true_loc + Point3D(
-                        self.true_width - self.block_overhang2,
-                        self.length - self.deck.joist_overhang - 3 / 2 * joist.width,
-                        0
-                    )
-                ),
+                )
+                for n in range(n_blocking_boards + 1)
             ])
         return s
 
