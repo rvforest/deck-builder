@@ -18,6 +18,7 @@ d2 = LDeckOnBlocks(
     length=ft(16) - 4.15,
     height=8,
     beam_class=TwoBySix,
+    joist_overhang=16,
     beam_overhang=6,
     joist_class=TwoBySix,
     outer_joist_class=TwoBySix,
