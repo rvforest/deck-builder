@@ -8,6 +8,7 @@ from decking import Decking
 from lumber import MiteredBoard, DeckingBoard
 from point import Point3D, Dim
 from shapes import ShapeCollection
+from util import oc_spacing, n_members
 
 
 class LDeckFrame:
@@ -21,33 +22,52 @@ class LDeckFrame:
             block_overhang1=section1.block_overhang1,
             block_overhang2=section1.block_overhang2,
             include_rim_joist=(True, False),
+            include_end_joist=(True, False),
             n_rim_joist=(1, 2),
             max_joist_spacing=16,
             deck=section1
         )
+        print(f"# section 1 joists: {self.section1.n_joists}")
+        # extra_space = self.section1.joist_spacing
+        extra_space = 12
+        self.section2_start = (
+            self.ldeck.section1.width - section1.block_overhang2 - section2.joist_class.width + extra_space
+        )
         self.section2 = DeckBlockFrame(
-            section2.width,
+            section2.width - (extra_space - self.ldeck.block_overhang2) + section2.joist_class.width,
             section2.length,
-            block_overhang1=section2.block_overhang1,
+            block_overhang1=0,
             block_overhang2=section2.block_overhang2,
-            include_rim_joist=(True, False),
+            include_rim_joist=(False, False),
             n_rim_joist=(1, 2),
-            include_end_joist=(False, True),
-            loc=Point3D(section1.width, ldeck.cutout_y, 0),
+            include_end_joist=(True, True),
+            loc=Point3D(
+                x=self.section2_start,
+                y=ldeck.cutout_y,
+                z=0
+            ),
             max_joist_spacing=16,
             deck=section2
         )
+        print(f"# section 2 joists: {self.section2.n_joists}")
+        print(f"# section 2 joist spacing: {self.section2.joist_spacing}")
         self.thickness = self.section1.thickness
         self.cutout_x = ldeck.cutout_x
         self.cutout_y = ldeck.cutout_y
 
     def shape(self) -> ShapeCollection:
+        joist = self.ldeck.joist_class
+        l_blocking_span = self.cutout_y - self.ldeck.joist_overhang + 3 * joist.width / 2
+        n_blocking_boards_at_l = n_members(l_blocking_span, joist.width, max_span=16)
+        blocking_spacing = oc_spacing(l_blocking_span, joist.width, n_blocking_boards_at_l)
+        n_blocking_boards_at_l -= 1  # Last blocking board falls on existing rim joist
+        print(f"Blocking spacing at L: {blocking_spacing:.2f}")
         return (
             self.section1.shape()
             + self.section2.shape()
             + ShapeCollection([
                 self.section1.outer_joist_class(
-                    self.section1.true_width + self.section2.true_width,
+                    self.ldeck.width,
                     position=Point3D(
                         0,
                         self.section1.length - self.section1.joist_class.width,
@@ -55,13 +75,51 @@ class LDeckFrame:
                     )
                 ),
                 self.section1.outer_joist_class(
-                    self.section1.true_width + self.section2.true_width,
+                    self.ldeck.width,
                     position=Point3D(
                         0,
                         self.section1.length - 2 * self.section1.joist_class.width,
                         self.section1.outer_height_offset
                     )
+                ),
+                # End Joist at L
+                self.section2.outer_joist_class(
+                    self.cutout_y - self.section2.outer_joist_class.width,
+                    position=Point3D(
+                        x=self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width,
+                        y=self.section2.outer_joist_class.width,
+                        z=0
+                    ),
+                    orient_towards=Dim.Y
+                ),
+                # Rim Joist at L
+                self.section2.outer_joist_class(
+                    self.cutout_x + self.section2.outer_joist_class.width + self.ldeck.block_overhang2 - joist.width,
+                    position=Point3D(
+                        x=(
+                            self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width
+                            - self.ldeck.block_overhang2 + joist.width
+                        ),
+                        y=self.cutout_y,
+                        z=0
+                    ),
+                    orient_towards=Dim.X
                 )
+            ])
+            + ShapeCollection([
+                # Blocking at L overhang
+                self.section2.joist_class(
+                    self.ldeck.block_overhang2 - self.section2.outer_joist_class.width,
+                    position=Point3D(
+                        x=(self.ldeck.width - self.cutout_x + self.section2.joist_class.width
+                            - self.section2.outer_joist_class.width - self.ldeck.block_overhang2),
+                        y=(self.ldeck.joist_overhang - self.section2.joist_class.width / 2
+                           + i * blocking_spacing),
+                        z=0
+                    ),
+                    orient_towards=Dim.X
+                )
+                for i in range(n_blocking_boards_at_l)
             ])
         )
 
@@ -301,26 +359,23 @@ class LDeckOnBlocks(Deck):
             block_overhang2=block_overhang3
         )
 
+        self._frame_cache = None
+
     @property
     def _decking(self) -> LDecking:
         return LDecking(self)
 
     @property
     def _frame(self) -> LDeckFrame:
-        return LDeckFrame(self)
+        if self._frame_cache is None:
+            self._frame_cache = LDeckFrame(self)
+        return self._frame_cache
 
     def footings(self) -> ShapeCollection:
-        n_joists2 = self._frame.section2.n_joists
-        section2 = self.section2.footings()
-        section2 = ShapeCollection([
-            footing.translate(
-                self.section1.width - self.section1.joist_class.width if i % n_joists2 == 0 else self.section1.width,
-                self.cutout_y,
-                0
-            )
-            for i, footing in enumerate(section2)
-        ])
-        return self.section1.footings() + section2
+        section1 = self.section1.footings()
+        frame2 = self._frame.section2
+        section2 = self.section2.footings(loc=frame2.loc, joist_spacing=frame2.joist_spacing)
+        return section1 + section2
 
     def all(self, show_decking=True, show_frame=False) -> ShapeCollection:
         shape_collection = ShapeCollection([])

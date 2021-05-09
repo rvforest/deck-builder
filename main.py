@@ -27,13 +27,13 @@ d2 = LDeckOnBlocks(
     cutout_x=ft(4),
     cutout_y=ft(5),
     block_overhang1=8,
-    block_overhang2=16,
+    block_overhang2=8,
     block_overhang3=8
 )
 deck_and_house = ShapeCollection([
     Ground(),
     House(),
-    d2.all(show_decking=True, show_frame=True)
+    d2.all(show_decking=False, show_frame=True)
 ])
 s.scad_render_to_file(deck_and_house.render_scad(), 'foo.scad')
 write_dxf_doc(deck_and_house, Dim.Z, 'foo_top.dxf')

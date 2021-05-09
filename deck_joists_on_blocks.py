@@ -106,7 +106,7 @@ class DeckBlockFrame(SingleSpanFrame):
             ])
 
         # Blocking on overhang
-        if self.block_overhang1 > 0:
+        if (self.block_overhang1 > 0) and (self.include_end_joist[0]):
             len_between_outer_footings = self.length - 2 * self.deck.joist_overhang - joist.width
             n_blocking_boards = n_members(len_between_outer_footings, joist.width, 16)
             blocking_spacing = len_between_outer_footings / n_blocking_boards
@@ -122,7 +122,7 @@ class DeckBlockFrame(SingleSpanFrame):
                 )
                 for n in range(n_blocking_boards + 1)
             ])
-        if self.block_overhang2 > 0:
+        if (self.block_overhang2 > 0) and (self.true_include_end_joist[1]):
             len_between_outer_footings = self.length - 2 * self.deck.joist_overhang - joist.width
             n_blocking_boards = n_members(len_between_outer_footings, joist.width, 16)
             blocking_spacing = len_between_outer_footings / n_blocking_boards
@@ -167,18 +167,22 @@ class DeckJoistsOnBlocks(Deck):
             block_overhang2=self.block_overhang2
         )
 
-    def footings(self):
+    def footings(self, loc=Point3D(0, 0, 0), joist_spacing=None):
+        if joist_spacing is None:
+            joist_spacing = self._frame.joist_spacing
         b = ShapeCollection()
+        print(f"Deck block spacing {joist_spacing:.2f}")
         for i in range(self.n_beams):
             for j in range(0, self._frame.n_joists):
                 b.append(
                     self.footing_class().translate(
-                        j * self._frame.joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang1,
+                        j * joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang1,
                         i * self.beam_spacing + self.joist_overhang,
                         0
                     )
                 )
-        return b.translate(0, 0, self.beam_height - self.footing_class.height)
+        move_to = loc + Point3D(0, 0, self.beam_height - self.footing_class.height)
+        return b.translate(*move_to)
 
     def _decking(self) -> Decking:
         return self.decking_class(self.width, self.length, self.decking_board_class)

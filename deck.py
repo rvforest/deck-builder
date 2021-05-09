@@ -4,6 +4,7 @@ from typing import Dict
 from footings import FootingFactory
 from frame import Frame
 from lumber import LumberSize, LumberFactory
+from point import Point3D
 from shapes import ShapeCollection, Drawable
 from util import ft, n_members, oc_spacing
 
@@ -30,6 +31,7 @@ class Deck:
             footing_class: FootingFactory,
             joist_overhang: float = 16,
             beam_overhang: float = 16,
+            loc: Point3D = Point3D(0, 0, 0)
     ):
         self.width = width
         self.length = length
@@ -41,6 +43,7 @@ class Deck:
         self.footing_class = footing_class
         self.joist_overhang = joist_overhang
         self.beam_overhang = beam_overhang
+        self.loc = loc
 
     @property
     def n_beams(self):
