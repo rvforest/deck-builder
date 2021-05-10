@@ -62,10 +62,11 @@ class LDeckFrame:
         blocking_spacing = oc_spacing(l_blocking_span, joist.width, n_blocking_boards_at_l)
         n_blocking_boards_at_l -= 1  # Last blocking board falls on existing rim joist
         print(f"Blocking spacing at L: {blocking_spacing:.2f}")
-        return (
-            self.section1.shape()
-            + self.section2.shape()
-            + ShapeCollection([
+
+        frame = self.section1.shape() + self.section2.shape()
+
+        # Double rim joist
+        frame += ShapeCollection([
                 self.section1.outer_joist_class(
                     self.ldeck.width,
                     position=Point3D(
@@ -82,46 +83,48 @@ class LDeckFrame:
                         self.section1.outer_height_offset
                     )
                 ),
-                # End Joist at L
-                self.section2.outer_joist_class(
-                    self.cutout_y - self.section2.outer_joist_class.width,
-                    position=Point3D(
-                        x=self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width,
-                        y=self.section2.outer_joist_class.width,
-                        z=0
-                    ),
-                    orient_towards=Dim.Y
+            ])
+        # End Joist at L
+        frame += ShapeCollection([
+            self.section2.outer_joist_class(
+                self.cutout_y - self.section2.outer_joist_class.width,
+                position=Point3D(
+                    x=self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width,
+                    y=self.section2.outer_joist_class.width,
+                    z=0
                 ),
-                # Rim Joist at L
-                self.section2.outer_joist_class(
-                    self.cutout_x + self.section2.outer_joist_class.width + self.ldeck.block_overhang2 - joist.width,
-                    position=Point3D(
-                        x=(
-                            self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width
-                            - self.ldeck.block_overhang2 + joist.width
-                        ),
-                        y=self.cutout_y,
-                        z=0
-                    ),
-                    orient_towards=Dim.X
-                )
-            ])
-            + ShapeCollection([
-                # Blocking at L overhang
-                self.section2.joist_class(
-                    self.ldeck.block_overhang2 - self.section2.outer_joist_class.width,
-                    position=Point3D(
-                        x=(self.ldeck.width - self.cutout_x + self.section2.joist_class.width
-                            - self.section2.outer_joist_class.width - self.ldeck.block_overhang2),
-                        y=(self.ldeck.joist_overhang - self.section2.joist_class.width / 2
-                           + i * blocking_spacing),
-                        z=0
-                    ),
-                    orient_towards=Dim.X
-                )
-                for i in range(n_blocking_boards_at_l)
-            ])
-        )
+                orient_towards=Dim.Y
+            ),
+        ])
+        # Rim Joist at L
+        frame += ShapeCollection([
+            self.section2.outer_joist_class(
+                self.cutout_x + self.section2.outer_joist_class.width + self.ldeck.block_overhang2 - joist.width,
+                position=Point3D(
+                    x=(self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width
+                        - self.ldeck.block_overhang2 + joist.width),
+                    y=self.cutout_y,
+                    z=0
+                ),
+                orient_towards=Dim.X
+            )
+        ])
+        # Blocking at L overhang
+        frame += ShapeCollection([
+            self.section2.joist_class(
+                self.ldeck.block_overhang2 - self.section2.outer_joist_class.width,
+                position=Point3D(
+                    x=(self.ldeck.width - self.cutout_x + self.section2.joist_class.width
+                        - self.section2.outer_joist_class.width - self.ldeck.block_overhang2),
+                    y=(self.ldeck.joist_overhang - self.section2.joist_class.width / 2
+                       + i * blocking_spacing),
+                    z=0
+                ),
+                orient_towards=Dim.X
+            )
+            for i in range(n_blocking_boards_at_l)
+        ])
+        return frame
 
 
 class LDecking:
@@ -316,7 +319,17 @@ class LDecking:
 class LDeckOnBlocks(Deck):
     """An L-shaped deck defined as a rectangle with a cutout in the SW corner."""
 
-    def __init__(self, *args, block_overhang1, block_overhang2, block_overhang3, cutout_x, cutout_y, **kwargs):
+    def __init__(
+            self,
+            *args,
+            block_overhang1,
+            block_overhang2,
+            block_overhang3,
+            cutout_x,
+            cutout_y,
+            tread_width=12,
+            **kwargs
+    ):
         """
         :param cutout_x: float Length of cutout in x direction.
         :param cutout_y: float Length of cutout in y direction.
