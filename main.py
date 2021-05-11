@@ -15,8 +15,8 @@ TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
 TrexBoard = DeckingFactory(LumberSize.SIX.value, 0.94, color=BROWN)
 
 d2 = LDeckOnBlocks(
-    width=240,
-    length=ft(16) - 4.15,
+    width=ft(19.5),
+    length=ft(16) - 1,
     height=8,
     beam_class=TwoBySix,
     joist_overhang=16,
@@ -25,8 +25,8 @@ d2 = LDeckOnBlocks(
     outer_joist_class=TwoBySix,
     decking_board_class=TrexBoard,
     footing_class=DeckBlockFactory(),
-    cutout_x=ft(4),
-    cutout_y=ft(5),
+    cutout_x=42,
+    cutout_y=ft(4),
     block_overhang1=8,
     block_overhang2=8,
     block_overhang3=8
@@ -34,7 +34,7 @@ d2 = LDeckOnBlocks(
 deck_and_house = ShapeCollection([
     Ground(),
     House(),
-    d2.all(show_decking=False, show_frame=True)
+    d2.all(show_decking=True, show_frame=True)
 ])
 s.scad_render_to_file(deck_and_house.render_scad(), 'foo.scad')
 write_dxf_doc(deck_and_house, Dim.Z, 'foo_top.dxf')
