@@ -110,7 +110,7 @@ class MiteredBoard(Lumber):
             position: Point3D,
             layer: str = None,
             orient_towards: Dim = Dim.X,
-            draw_x: bool = True,
+            draw_x: bool = False,
             color=None,
             start_miter=None,
             end_miter=None
@@ -221,7 +221,8 @@ class DeckingBoard(Lumber):
             position=self.position + Point3D(x, y, z),
             orient_towards=self.orient_towards,
             layer=self.layer,
-            color=self.color
+            color=self.color,
+            draw_x=self.draw_x
         )
 
 
