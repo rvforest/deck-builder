@@ -124,6 +124,47 @@ class LDeckFrame:
             )
             for i in range(n_blocking_boards_at_l)
         ])
+        # Stairs
+        stairs = ShapeCollection([
+            joist(
+                self.ldeck.cutout_x,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x,
+                    y=self.cutout_y - joist.width,
+                    z=0
+                ),
+                orient_towards=Dim.X
+            ),
+            joist(
+                self.ldeck.cutout_x,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x,
+                    y=self.cutout_y - joist.width - self.ldeck.tread_width,
+                    z=0
+                ),
+                orient_towards=Dim.X
+            )
+        ])
+        # Blocking for stairs
+        n_blocking_boards_stairs = n_members(self.ldeck.cutout_x, joist.width, max_span=12)
+        blocking_spacing = oc_spacing(self.ldeck.cutout_x, joist.width, n_blocking_boards_stairs)
+        stair_blocking_len = self.ldeck.tread_width - joist.width
+        print(f"Stair blocking len: {stair_blocking_len}")
+        stairs += ShapeCollection([
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x + i * blocking_spacing,
+                    y=self.cutout_y - joist.width - stair_blocking_len,
+                    z=0
+                ),
+                orient_towards=Dim.Y
+            )
+            for i in range(n_blocking_boards_stairs)
+        ])
+
+        stairs = stairs.translate(0, 0, -4)
+        frame += stairs
         return frame
 
 
@@ -341,6 +382,7 @@ class LDeckOnBlocks(Deck):
         self.block_overhang3 = block_overhang3
         self.cutout_x = cutout_x
         self.cutout_y = cutout_y
+        self.tread_width = tread_width
         super().__init__(*args, **kwargs)
 
         self.section1 = DeckJoistsOnBlocks(
