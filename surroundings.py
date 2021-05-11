@@ -2,6 +2,7 @@ import solid as s
 from ezdxf.layouts import Modelspace
 from solid import OpenSCADObject, utils as su
 
+from colors import BLUE, GREEN
 from layers import Layer
 from paths import trace_rectangle
 from point import Dim, Point3D, Point2D
@@ -26,7 +27,7 @@ class Ground(Shape):
         [2, 0, 4]
     ]
 
-    def __init__(self, color=(0, .4, .1)):
+    def __init__(self, color=GREEN):
         self.color = color
 
     def _render_scad(self) -> OpenSCADObject:
@@ -56,7 +57,6 @@ class Ground(Shape):
 
 class House(Cuboid):
 
-    BLUE = (0.5, 0.5, 1)
     WALL_X_START = -120
     WALL_DECK_GAP = 1
     HOUSE_WALL_LEN = 40 * 12
@@ -85,7 +85,7 @@ class House(Cuboid):
 
     def _render_scad(self) -> OpenSCADObject:
         house = super()._render_scad()
-        house = s.color(self.BLUE)(house)
+        house = s.color(BLUE)(house)
         # Add door
         house = su.difference()(
             house,
