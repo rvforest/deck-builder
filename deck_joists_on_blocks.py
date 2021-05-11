@@ -3,6 +3,7 @@ from typing import Type
 from deck import Deck
 from decking import SingleSpanDecking, Decking
 from frame import SingleSpanFrame
+from layers import Layer
 from point import Point3D, Dim
 from surroundings import Ground, House
 from lumber import LumberSize
@@ -118,7 +119,8 @@ class DeckBlockFrame(SingleSpanFrame):
                         joist.width,
                         self.deck.joist_overhang - joist.width / 2 + n * blocking_spacing,
                         0
-                    )
+                    ),
+                    layer=Layer.BLOCKING
                 )
                 for n in range(n_blocking_boards + 1)
             ])
@@ -134,7 +136,8 @@ class DeckBlockFrame(SingleSpanFrame):
                         self.true_width - self.block_overhang2,
                         self.deck.joist_overhang - joist.width / 2 + n * blocking_spacing,
                         0
-                    )
+                    ),
+                    layer=Layer.BLOCKING
                 )
                 for n in range(n_blocking_boards + 1)
             ])

@@ -5,6 +5,7 @@ from typing import Tuple
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
+from layers import Layer
 from lumber import MiteredBoard, DeckingBoard
 from point import Point3D, Dim
 from shapes import ShapeCollection
@@ -120,7 +121,8 @@ class LDeckFrame:
                        + i * blocking_spacing),
                     z=0
                 ),
-                orient_towards=Dim.X
+                orient_towards=Dim.X,
+                layer=Layer.BLOCKING
             )
             for i in range(n_blocking_boards_at_l)
         ])
@@ -133,7 +135,8 @@ class LDeckFrame:
                     y=self.cutout_y - joist.width,
                     z=0
                 ),
-                orient_towards=Dim.X
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS
             ),
             joist(
                 self.ldeck.cutout_x,
@@ -142,7 +145,8 @@ class LDeckFrame:
                     y=self.cutout_y - joist.width - self.ldeck.tread_width,
                     z=0
                 ),
-                orient_towards=Dim.X
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS
             )
         ])
         # Blocking for stairs
@@ -158,7 +162,8 @@ class LDeckFrame:
                     y=self.cutout_y - joist.width - stair_blocking_len,
                     z=0
                 ),
-                orient_towards=Dim.Y
+                orient_towards=Dim.Y,
+                layer=Layer.STAIRS
             )
             for i in range(n_blocking_boards_stairs)
         ])

@@ -35,20 +35,23 @@ class Ground(Shape):
         return s.polyhedron(Ground.ground_points, Ground.ground_faces)
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
-        dxfattribs = {'layer': Layer.GROUND.value}
         if plane == Dim.Z:
             pass
         elif plane == Dim.X:
-            msp.add_line(Ground.ground_points[0][1:], Ground.ground_points[2][1:], dxfattribs=dxfattribs)
-            msp.add_line(Ground.ground_points[1][1:], Ground.ground_points[3][1:], dxfattribs=dxfattribs)
+            msp.add_line(
+                Ground.ground_points[0][1:], Ground.ground_points[2][1:], dxfattribs={'layer': Layer.GROUND1.value}
+            )
+            msp.add_line(
+                Ground.ground_points[1][1:], Ground.ground_points[3][1:], dxfattribs={'layer': Layer.GROUND2.value}
+            )
         elif plane == Dim.Y:
             start = Ground.ground_points[0]
             end = Ground.ground_points[1]
-            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs=dxfattribs)
+            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs={'layer': Layer.GROUND1.value})
 
             start = Ground.ground_points[2]
             end = Ground.ground_points[3]
-            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs=dxfattribs)
+            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs={'layer': Layer.GROUND2.value})
 
     def translate(self, x: float, y: float, z: float) -> Shape:
         print('Warning: Ground cannot be moved. No change was made.')

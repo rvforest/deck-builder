@@ -6,4 +6,7 @@ class Layer(Enum):
     FRAME = "frame"
     DECKING = "decking"
     HOUSE = "house"
-    GROUND = "ground"
+    GROUND1 = "ground 1"
+    GROUND2 = "ground 2"
+    STAIRS = "stairs"
+    BLOCKING = "blocking"
