@@ -238,7 +238,7 @@ class LumberFactory:
             self,
             length: float,
             position: Optional[Point3D] = None,
-            layer: Optional[str] = None,
+            layer: Optional[Layer] = None,
             orient_towards: Dim = Dim.X
     ) -> Lumber:
         return Lumber(
@@ -282,7 +282,7 @@ class DeckingFactory(LumberFactory):
             self,
             length: float,
             position: Optional[Point3D] = None,
-            layer: Optional[str] = None,
+            layer: Optional[Layer] = None,
             orient_towards: Dim = Dim.X
     ) -> DeckingBoard:
         return DeckingBoard(
