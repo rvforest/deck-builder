@@ -251,7 +251,7 @@ class LumberFactory:
 
 class DeckingFactory(LumberFactory):
 
-    def __init__(self, width: float, height: float, draw_x: bool = True, color=None):
+    def __init__(self, width: float, height: float, draw_x: bool = False, color=None):
         self._w2w_gap = None
         self._e2e_gap = None
         super().__init__(width, height, draw_x, color)
