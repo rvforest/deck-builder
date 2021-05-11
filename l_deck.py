@@ -429,7 +429,7 @@ class LDeckOnBlocks(Deck):
     def footings(self) -> ShapeCollection:
         section1 = self.section1.footings()
         frame2 = self._frame.section2
-        section2 = self.section2.footings(loc=frame2.loc, joist_spacing=frame2.joist_spacing)
+        section2 = self.section2.footings(loc=frame2.loc, n_joists=frame2.n_joists, joist_spacing=frame2.joist_spacing)
         return section1 + section2
 
     def all(self, show_decking=True, show_frame=False) -> ShapeCollection:

@@ -167,13 +167,15 @@ class DeckJoistsOnBlocks(Deck):
             block_overhang2=self.block_overhang2
         )
 
-    def footings(self, loc=Point3D(0, 0, 0), joist_spacing=None):
+    def footings(self, loc=Point3D(0, 0, 0), n_joists=None, joist_spacing=None):
+        if n_joists is None:
+            n_joists = self._frame.n_joists
         if joist_spacing is None:
             joist_spacing = self._frame.joist_spacing
         b = ShapeCollection()
         print(f"Deck block spacing {joist_spacing:.2f}")
         for i in range(self.n_beams):
-            for j in range(0, self._frame.n_joists):
+            for j in range(n_joists):
                 b.append(
                     self.footing_class().translate(
                         j * joist_spacing + LumberSize.TWO.value / 2 + self.block_overhang1,
