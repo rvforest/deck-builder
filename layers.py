@@ -10,3 +10,4 @@ class Layer(Enum):
     GROUND2 = "ground 2"
     STAIRS = "stairs"
     BLOCKING = "blocking"
+    STAIR_TREADS = "stair treads"

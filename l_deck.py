@@ -11,6 +11,8 @@ from point import Point3D, Dim
 from shapes import ShapeCollection
 from util import oc_spacing, n_members
 
+STAIR_OFFSET = 4
+
 
 class LDeckFrame:
     def __init__(self, ldeck: LDeckOnBlocks):
@@ -142,7 +144,7 @@ class LDeckFrame:
                 self.ldeck.cutout_x,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x,
-                    y=self.cutout_y - joist.width - self.ldeck.tread_width,
+                    y=self.cutout_y - self.ldeck.tread_width,
                     z=0
                 ),
                 orient_towards=Dim.X,
@@ -152,7 +154,7 @@ class LDeckFrame:
         # Blocking for stairs
         n_blocking_boards_stairs = n_members(self.ldeck.cutout_x, joist.width, max_span=12)
         blocking_spacing = oc_spacing(self.ldeck.cutout_x, joist.width, n_blocking_boards_stairs)
-        stair_blocking_len = self.ldeck.tread_width - joist.width
+        stair_blocking_len = self.ldeck.tread_width - 2 * joist.width
         print(f"Stair blocking len: {stair_blocking_len}")
         stairs += ShapeCollection([
             joist(
@@ -168,7 +170,7 @@ class LDeckFrame:
             for i in range(n_blocking_boards_stairs)
         ])
 
-        stairs = stairs.translate(0, 0, -4)
+        stairs = stairs.translate(0, 0, -STAIR_OFFSET)
         frame += stairs
         return frame
 
@@ -296,6 +298,22 @@ class LDecking:
             )
         ])
 
+        stair_treads = ShapeCollection([
+            board(
+                self.ldeck.cutout_x,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x,
+                    y=(self.cutout_y - self.ldeck.tread_width
+                       - self.board_overhang + i * (board.width + self.w2w_gap)),
+                    z=0
+                ),
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS
+            )
+            for i in range(2)
+        ])
+        boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
+
         # picture frame
         boards += ShapeCollection([
             MiteredBoard(
@@ -373,7 +391,7 @@ class LDeckOnBlocks(Deck):
             block_overhang3,
             cutout_x,
             cutout_y,
-            tread_width=12,
+            tread_width=11,
             **kwargs
     ):
         """
