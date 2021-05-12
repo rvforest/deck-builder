@@ -257,10 +257,10 @@ class LDecking:
         boards = ShapeCollection([
             # Section 1 - shorter decking span
             board(
-                section1_len,
+                section1_len - 2 * self.e2e_gap,
                 orient_towards=Dim.X,
                 position=Point3D(
-                    x=-self.board_overhang + board.width,
+                    x=-self.board_overhang + board.width + self.e2e_gap,
                     y=i * board_spacing + LDecking.decking_start,
                     z=0
                 )
@@ -271,10 +271,10 @@ class LDecking:
         # Section 2 - longer decking span
         boards += ShapeCollection([
             board(
-                self.ldeck.width + 2 * self.board_overhang - 2 * board.width,
+                self.ldeck.width + 2 * self.board_overhang - 2 * board.width - 2 * self.e2e_gap,
                 orient_towards=Dim.X,
                 position=Point3D(
-                    x=-self.board_overhang + board.width,
+                    x=-self.board_overhang + board.width + self.e2e_gap,
                     y=(i + 1) * board_spacing + self.ldeck.cutout_y - self.board_overhang,
                     z=0
                 )
