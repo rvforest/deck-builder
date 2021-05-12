@@ -2,6 +2,7 @@ from __future__ import annotations
 import math
 from typing import Tuple
 
+from colors import BROWN
 from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
@@ -322,7 +323,8 @@ class LDecking:
                 self.ldeck.length + self.board_overhang - LDecking.decking_start,
                 position=Point3D(-self.board_overhang, LDecking.decking_start, 0),
                 orient_towards=Dim.Y,
-                end_miter='down'
+                end_miter='down',
+                color=BROWN
             ),
             MiteredBoard(
                 board.width,
@@ -335,7 +337,8 @@ class LDecking:
                 ),
                 orient_towards=Dim.X,
                 start_miter='down',
-                end_miter='down'
+                end_miter='down',
+                color=BROWN
             ),
             MiteredBoard(
                 board.width,
@@ -348,7 +351,8 @@ class LDecking:
                 ),
                 orient_towards=Dim.Y,
                 start_miter='up',
-                end_miter='up'
+                end_miter='up',
+                color=BROWN
             ),
             MiteredBoard(
                 board.width,
@@ -361,7 +365,8 @@ class LDecking:
                 ),
                 orient_towards=Dim.X,
                 start_miter='down',
-                end_miter='up'
+                end_miter='up',
+                color=BROWN
             ),
             MiteredBoard(
                 board.width,
@@ -374,7 +379,8 @@ class LDecking:
                 ),
                 orient_towards=Dim.Y,
                 start_miter=None,
-                end_miter='down'
+                end_miter='down',
+                color=BROWN
             ),
         ])
         return boards
