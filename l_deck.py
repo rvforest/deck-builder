@@ -175,7 +175,7 @@ class LDeckFrame:
         frame += stairs
 
         # 2nd stairs
-        ylen = self.ldeck.stairs2_y_offset + self.ldeck.tread_depth - joist.width
+        ylen = self.ldeck.stairs2_y_offset + self.ldeck.tread_depth
         stairs = ShapeCollection([
             joist(
                 ylen,
@@ -220,8 +220,30 @@ class LDeckFrame:
                 layer=Layer.STAIRS
             )
         ])
-        b2 = b1.copy().translate(0, self.ldeck.tread_depth - 2 * joist.width, 0)
-        stairs += b1 + b2
+        b2 = b1.copy().translate(0, self.ldeck.tread_depth - joist.width, 0)
+        corner_support = ShapeCollection([
+            MiteredBoard(
+                joist.width,
+                joist.height,
+                9.1,
+                Point3D(-0.435, self.ldeck.length + 2 * joist.width, 0),
+                rotate=135,
+                start_miter='down',
+                end_miter='down'
+            )
+        ])
+        corner_support += ShapeCollection([
+            MiteredBoard(
+                joist.width,
+                joist.height,
+                11.5,
+                Point3D(-0.435, self.ldeck.length + 1.1, 0),
+                rotate=135,
+                start_miter='down',
+                end_miter='down'
+            )
+        ])
+        stairs += b1 + b2 + corner_support
 
         n_blocking_boards_stairs = n_members(xlen, joist.width, max_span=12)
         blocking_spacing = oc_spacing(xlen, joist.width, n_blocking_boards_stairs)
@@ -231,7 +253,7 @@ class LDeckFrame:
                 stair_blocking_len,
                 Point3D(
                     x=i * blocking_spacing,
-                    y=self.ldeck.length,
+                    y=self.ldeck.length + joist.width,
                     z=0
                 ),
                 orient_towards=Dim.Y,
