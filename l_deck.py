@@ -10,7 +10,7 @@ from layers import Layer
 from lumber import MiteredBoard, DeckingBoard
 from point import Point3D, Dim
 from shapes import ShapeCollection
-from util import oc_spacing, n_members
+from util import oc_spacing, n_members, ft
 
 STAIR_OFFSET = 4
 
@@ -163,6 +163,75 @@ class LDeckFrame:
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x + i * blocking_spacing,
                     y=self.cutout_y - joist.width - stair_blocking_len,
+                    z=0
+                ),
+                orient_towards=Dim.Y,
+                layer=Layer.STAIRS
+            )
+            for i in range(n_blocking_boards_stairs)
+        ])
+
+        stairs = stairs.translate(0, 0, -STAIR_OFFSET)
+        frame += stairs
+
+        # 2nd stairs
+        ylen = self.ldeck.stairs2_y_offset + self.ldeck.tread_depth - joist.width
+        stairs = ShapeCollection([
+            joist(
+                ylen,
+                Point3D(
+                    x=-self.ldeck.tread_depth,
+                    y=self.ldeck.length - self.ldeck.stairs2_y_offset,
+                    z=0
+                ),
+                orient_towards=Dim.Y,
+                layer=Layer.STAIRS
+            )
+        ])
+        stairs += stairs.copy().translate(self.ldeck.tread_depth - joist.width, 0, 0)
+
+        n_blocking_boards_stairs = n_members(ylen, joist.width, max_span=12)
+        blocking_spacing = oc_spacing(ylen, joist.width, n_blocking_boards_stairs)
+        stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
+        stairs += ShapeCollection([
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    x=-self.ldeck.tread_depth + joist.width,
+                    y=self.ldeck.length - self.ldeck.stairs2_y_offset + i * blocking_spacing,
+                    z=0
+                ),
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS
+            )
+            for i in range(n_blocking_boards_stairs)
+        ])
+
+        xlen = self.ldeck.stairs2_x_offset - self.ldeck.tread_depth
+        b1 = ShapeCollection([
+            joist(
+                xlen,
+                Point3D(
+                    x=0,
+                    y=self.ldeck.length,
+                    z=0
+                ),
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS
+            )
+        ])
+        b2 = b1.copy().translate(0, self.ldeck.tread_depth - 2 * joist.width, 0)
+        stairs += b1 + b2
+
+        n_blocking_boards_stairs = n_members(xlen, joist.width, max_span=12)
+        blocking_spacing = oc_spacing(xlen, joist.width, n_blocking_boards_stairs)
+        stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
+        stairs += ShapeCollection([
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    x=i * blocking_spacing,
+                    y=self.ldeck.length,
                     z=0
                 ),
                 orient_towards=Dim.Y,
@@ -401,6 +470,8 @@ class LDeckOnBlocks(Deck):
             cutout_y,
             tread_depth=11,
             tread_width=38,
+            stair2_x_offset=ft(8),
+            stair2_y_offset=ft(8),
             **kwargs
     ):
         """
@@ -416,6 +487,8 @@ class LDeckOnBlocks(Deck):
         self.cutout_y = cutout_y
         self.tread_depth = tread_depth
         self.tread_width = tread_width
+        self.stairs2_x_offset = stair2_x_offset
+        self.stairs2_y_offset = stair2_y_offset
         super().__init__(*args, **kwargs)
 
         self.section1 = DeckJoistsOnBlocks(

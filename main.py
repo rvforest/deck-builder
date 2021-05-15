@@ -14,10 +14,23 @@ TwoBySix = LumberFactory(LumberSize.TWO.value, LumberSize.SIX.value)
 TwoByEight = LumberFactory(LumberSize.TWO.value, LumberSize.EIGHT.value)
 TrexBoard = DeckingFactory(LumberSize.SIX.value, 0.94, color=BROWN)
 
-d2 = LDeckOnBlocks(block_overhang1=8, block_overhang2=8, block_overhang3=8, cutout_x=42, cutout_y=ft(4), width=ft(19.5),
-                   length=ft(16) - 1, height=8, beam_class=TwoBySix, joist_overhang=16, beam_overhang=6,
-                   joist_class=TwoBySix, outer_joist_class=TwoBySix, decking_board_class=TrexBoard,
-                   footing_class=DeckBlockFactory())
+d2 = LDeckOnBlocks(
+    block_overhang1=8,
+    block_overhang2=8,
+    block_overhang3=8,
+    cutout_x=42,
+    cutout_y=ft(5),
+    width=ft(19.5),
+    length=ft(16) - 1,
+    height=8,
+    beam_class=TwoBySix,
+    joist_overhang=16,
+    beam_overhang=6,
+    joist_class=TwoBySix,
+    outer_joist_class=TwoBySix,
+    decking_board_class=TrexBoard,
+    footing_class=DeckBlockFactory()
+)
 deck_and_house = ShapeCollection([
     Ground(),
     House(),
