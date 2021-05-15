@@ -29,6 +29,7 @@ class Ground(Shape):
 
     def __init__(self, color=GREEN):
         self.color = color
+        self.rotate = None
 
     def _render_scad(self) -> OpenSCADObject:
         # noinspection PyTypeChecker

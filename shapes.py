@@ -17,6 +17,7 @@ class Shape(Protocol):
     layer: Optional[Layer]
     height: float
     color: Optional[Tuple[float, float, float]]
+    rotate: Optional[float]
 
     @abstractmethod
     def _render_scad(self) -> OpenSCADObject:
@@ -25,9 +26,11 @@ class Shape(Protocol):
     def render_scad(self) -> OpenSCADObject:
         shape = self._render_scad()
         if self.color is not None:
-            return s.color(self.color)(shape)
-        else:
-            return shape
+            shape = s.color(self.color)(shape)
+        if self.rotate is not None:
+            print("rotating")
+            shape = su.rotate(self.rotate)(shape)
+        return shape
 
     @abstractmethod
     def render_dxf(self, plane: Dim, msp: Modelspace):
@@ -47,7 +50,8 @@ class Cuboid(Shape):
             z_len: float,
             position: Optional[Point3D] = None,
             layer: Layer = None,
-            color: Optional[Tuple[float, float, float]] = None
+            color: Optional[Tuple[float, float, float]] = None,
+            rotate: Optional[float] = None
     ):
         self.x_len = x_len
         self.y_len = y_len
@@ -56,6 +60,7 @@ class Cuboid(Shape):
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
         self.color = color
+        self.rotate = rotate
 
         self.height = self.z_len
 
@@ -84,7 +89,7 @@ class Cuboid(Shape):
     def translate(self, x: float, y: float, z: float) -> Cuboid:
         return Cuboid(
             self.x_len, self.y_len, self.z_len,
-            position=self.position + Point3D(x, y, z), layer=self.layer, color=self.color
+            position=self.position + Point3D(x, y, z), layer=self.layer, color=self.color, rotate=self.rotate
         )
 
 
@@ -98,7 +103,8 @@ class TrapezoidalPrism(Shape):
             center: bool = True,
             position: Optional[Point3D] = None,
             layer: Layer = None,
-            color: Tuple[float, float, float] = None
+            color: Tuple[float, float, float] = None,
+            rotate=None
     ):
         self.top_square_len = top_square_len
         self.bottom_square_len = bottom_square_len
@@ -107,6 +113,7 @@ class TrapezoidalPrism(Shape):
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
         self.color = color
+        self.rotate = rotate
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
 
@@ -160,7 +167,8 @@ class TrapezoidalPrism(Shape):
             self.height,
             position=self.position + Point3D(x, y, z),
             layer=self.layer,
-            color=self.color
+            color=self.color,
+            rotate=self.rotate
         )
 
 

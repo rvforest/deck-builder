@@ -33,7 +33,8 @@ class Lumber(Cuboid):
             layer: Layer = None,
             orient_towards: Dim = Dim.X,
             draw_x: bool = True,
-            color=None
+            color=None,
+            rotate=None
     ):
         self.width = width
         self.height = height
@@ -50,7 +51,7 @@ class Lumber(Cuboid):
         if layer is None:
             layer = Layer.FRAME
 
-        super().__init__(x, y, z, position, layer, color=color)
+        super().__init__(x, y, z, position, layer, color=color, rotate=rotate)
 
     def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
         # First draw Cuboid outline
@@ -94,7 +95,8 @@ class Lumber(Cuboid):
             position=self.position + Point3D(x, y, z),
             orient_towards=self.orient_towards,
             layer=self.layer,
-            color=self.color
+            color=self.color,
+            rotate=self.rotate
         )
 
 
@@ -113,13 +115,16 @@ class MiteredBoard(Lumber):
             draw_x: bool = False,
             color=None,
             start_miter=None,
-            end_miter=None
+            end_miter=None,
+            rotate=None
     ):
         self.start_miter = start_miter
         self.end_miter = end_miter
         if layer is None:
             layer = Layer.DECKING
-        super(MiteredBoard, self).__init__(width, height, length, position, layer, orient_towards, draw_x, color)
+        super(MiteredBoard, self).__init__(
+            width, height, length, position, layer, orient_towards, draw_x, color, rotate
+        )
 
     def _get_path(self, plane: Dim):
         path = super()._get_path(plane)
@@ -171,7 +176,8 @@ class MiteredBoard(Lumber):
             layer=self.layer,
             color=self.color,
             start_miter=self.start_miter,
-            end_miter=self.end_miter
+            end_miter=self.end_miter,
+            rotate=self.rotate
         )
 
 
@@ -188,7 +194,8 @@ class DeckingBoard(Lumber):
             layer: str = None,
             orient_towards: Dim = Dim.X,
             draw_x: bool = True,
-            color=None
+            color=None,
+            rotate=None
     ):
         self.w2w_gap = w2w_gap
         self.e2e_gap = e2e_gap
@@ -196,7 +203,7 @@ class DeckingBoard(Lumber):
         if layer is None:
             layer = Layer.DECKING
 
-        super().__init__(width, height, length, position, layer, orient_towards, draw_x, color)
+        super().__init__(width, height, length, position, layer, orient_towards, draw_x, color, rotate)
 
     def _get_path(self, plane: Dim):
         """Don't draw decking gaps in DXF file"""
@@ -222,7 +229,8 @@ class DeckingBoard(Lumber):
             orient_towards=self.orient_towards,
             layer=self.layer,
             color=self.color,
-            draw_x=self.draw_x
+            draw_x=self.draw_x,
+            rotate=self.rotate
         )
 
 
@@ -239,10 +247,12 @@ class LumberFactory:
             length: float,
             position: Optional[Point3D] = None,
             layer: Optional[Layer] = None,
-            orient_towards: Dim = Dim.X
+            orient_towards: Dim = Dim.X,
+            rotate: Optional[float] = None
     ) -> Lumber:
         return Lumber(
-            self.width, self.height, length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color
+            self.width, self.height, length, position, layer, orient_towards,
+            draw_x=self.draw_x, color=self.color, rotate=rotate
         )
 
     def copy(self):
@@ -283,11 +293,12 @@ class DeckingFactory(LumberFactory):
             length: float,
             position: Optional[Point3D] = None,
             layer: Optional[Layer] = None,
-            orient_towards: Dim = Dim.X
+            orient_towards: Dim = Dim.X,
+            rotate: Optional[float] = None
     ) -> DeckingBoard:
         return DeckingBoard(
             self.w2w_gap, self.e2e_gap, self.width, self.height,
-            length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color
+            length, position, layer, orient_towards, draw_x=self.draw_x, color=self.color, rotate=rotate
         )
 
 
