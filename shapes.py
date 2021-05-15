@@ -28,8 +28,10 @@ class Shape(Protocol):
         if self.color is not None:
             shape = s.color(self.color)(shape)
         if self.rotate is not None:
-            print("rotating")
+            # Rotation is around Z axis so shape must be moved to origin before rotating
+            shape = su.translate(-self.position)(shape)
             shape = su.rotate(self.rotate)(shape)
+            shape = su.translate(self.position)(shape)
         return shape
 
     @abstractmethod
