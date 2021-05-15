@@ -390,25 +390,57 @@ class LDecking:
             )
         ])
 
+        mgap = self.e2e_gap / math.sqrt(2)
+
         stair_treads = ShapeCollection([
+            MiteredBoard(
+                board.width,
+                board.height,
+                self.ldeck.tread_width + self.board_overhang - mgap,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x,
+                    y=self.cutout_y - self.ldeck.tread_depth - self.board_overhang,
+                    z=0
+                ),
+                orient_towards=Dim.X,
+                layer=Layer.STAIRS,
+                end_miter='up',
+                color=BROWN
+            )
+        ])
+        stair_treads += ShapeCollection([
             board(
-                self.ldeck.tread_width,
+                self.ldeck.tread_width + self.board_overhang - board.width - self.e2e_gap,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x,
                     y=(self.cutout_y - self.ldeck.tread_depth
-                       - self.board_overhang + i * (board.width + self.w2w_gap)),
+                       - self.board_overhang + board.width + self.w2w_gap),
                     z=0
                 ),
                 orient_towards=Dim.X,
                 layer=Layer.STAIRS
             )
-            for i in range(2)
+        ])
+        stair_treads += ShapeCollection([
+            MiteredBoard(
+                board.width,
+                board.height,
+                2 * board.width + self.w2w_gap,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x + self.ldeck.tread_width - board.width + self.board_overhang + mgap,
+                    y=self.cutout_y - self.ldeck.tread_depth - self.board_overhang,
+                    z=0
+                ),
+                layer=Layer.STAIRS,
+                orient_towards=Dim.Y,
+                color=BROWN,
+                start_miter='up'
+            )
         ])
         boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
 
         # 2nd stair treads
         st_w2w = Decking.w2w_gap_min
-        mgap = self.e2e_gap / math.sqrt(2)
 
         stair_treads = ShapeCollection([
             # East side
@@ -451,7 +483,6 @@ class LDecking:
         boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
 
         # picture frame
-        mgap = self.e2e_gap / math.sqrt(2)
         boards += ShapeCollection([
             MiteredBoard(
                 board.width,
