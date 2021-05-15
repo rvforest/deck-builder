@@ -197,6 +197,9 @@ class ShapeCollection:
     def render_scad(self):
         return sum([shape.render_scad() for shape in self])
 
+    def copy(self):
+        return ShapeCollection(self._shapes.copy())
+
 
 if __name__ == '__main__':
     pass
