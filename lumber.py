@@ -30,7 +30,7 @@ class Lumber(Cuboid):
             height: float,
             length: float,
             position: Point3D,
-            layer: str = None,
+            layer: Layer = None,
             orient_towards: Dim = Dim.X,
             draw_x: bool = True,
             color=None
@@ -108,7 +108,7 @@ class MiteredBoard(Lumber):
             height: float,
             length: float,
             position: Point3D,
-            layer: str = None,
+            layer: Layer = None,
             orient_towards: Dim = Dim.X,
             draw_x: bool = False,
             color=None,
