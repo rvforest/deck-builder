@@ -316,11 +316,12 @@ class LDecking:
         boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
 
         # picture frame
+        mgap = self.e2e_gap / math.sqrt(2)
         boards += ShapeCollection([
             MiteredBoard(
                 board.width,
                 board.height,
-                self.ldeck.length + self.board_overhang - LDecking.decking_start,
+                self.ldeck.length + self.board_overhang - LDecking.decking_start - mgap,
                 position=Point3D(-self.board_overhang, LDecking.decking_start, 0),
                 orient_towards=Dim.Y,
                 end_miter='down',
@@ -329,9 +330,9 @@ class LDecking:
             MiteredBoard(
                 board.width,
                 board.height,
-                self.ldeck.width + 2 * self.board_overhang,
+                self.ldeck.width + 2 * self.board_overhang - 2 * mgap,
                 position=Point3D(
-                    -self.board_overhang,
+                    -self.board_overhang + mgap,
                     self.ldeck.length + self.board_overhang - board.width,
                     0
                 ),
@@ -343,10 +344,10 @@ class LDecking:
             MiteredBoard(
                 board.width,
                 board.height,
-                self.ldeck.section2.length + 2 * self.board_overhang,
+                self.ldeck.section2.length + 2 * self.board_overhang - 2 * mgap,
                 position=Point3D(
                     -self.board_overhang + self.ldeck.width + 2 * self.board_overhang - board.width,
-                    self.cutout_y - self.board_overhang,
+                    self.cutout_y - self.board_overhang + mgap,
                     0
                 ),
                 orient_towards=Dim.Y,
@@ -357,9 +358,9 @@ class LDecking:
             MiteredBoard(
                 board.width,
                 board.height,
-                self.cutout_x + board.width,
+                self.cutout_x + board.width - 2 * mgap,
                 position=Point3D(
-                    -self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - board.width,
+                    -self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - board.width + mgap,
                     self.cutout_y - self.board_overhang,
                     0
                 ),
@@ -371,11 +372,12 @@ class LDecking:
             MiteredBoard(
                 board.width,
                 board.height,
-                self.cutout_y - self.board_overhang + board.width - LDecking.decking_start,
+                self.cutout_y - self.board_overhang + board.width - LDecking.decking_start - mgap,
                 position=Point3D(
-                    -self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - board.width,
-                    LDecking.decking_start,
-                    0
+                    x=-self.board_overhang + self.ldeck.section1.width + 2 * self.board_overhang - mgap
+                    - board.width + self.e2e_gap / 2,
+                    y=LDecking.decking_start,
+                    z=0
                 ),
                 orient_towards=Dim.Y,
                 start_miter=None,
