@@ -225,8 +225,8 @@ class LDeckFrame:
             MiteredBoard(
                 joist.width,
                 joist.height,
-                9.1,
-                Point3D(-0.435, self.ldeck.length + 2 * joist.width, 0),
+                11.15,
+                Point3D(-0.435, self.ldeck.length + 2.7, 0),
                 rotate=135,
                 start_miter='down',
                 end_miter='down'
@@ -236,11 +236,11 @@ class LDeckFrame:
             MiteredBoard(
                 joist.width,
                 joist.height,
-                11.5,
-                Point3D(-0.435, self.ldeck.length + 1.1, 0),
+                12.83,
+                Point3D(-0.435, self.ldeck.length + 0.4, 0),
                 rotate=135,
                 start_miter='down',
-                end_miter='down'
+                end_miter='up'
             )
         ])
         stairs += b1 + b2 + corner_support
