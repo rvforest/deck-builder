@@ -427,7 +427,8 @@ class LDecking:
                 board.height,
                 2 * board.width + self.w2w_gap,
                 Point3D(
-                    x=self.ldeck.width - self.ldeck.cutout_x + self.ldeck.tread_width - board.width + self.board_overhang + mgap,
+                    x=self.ldeck.width - self.ldeck.cutout_x + self.ldeck.tread_width - board.width
+                    + self.board_overhang + mgap,
                     y=self.cutout_y - self.ldeck.tread_depth - self.board_overhang,
                     z=0
                 ),
@@ -450,7 +451,8 @@ class LDecking:
                 self.ldeck.stairs2_x_offset + 2 * self.board_overhang - mgap - i * (board.width + st_w2w),
                 Point3D(
                     x=-self.ldeck.tread_depth - self.board_overhang + mgap + i * (board.width + st_w2w),
-                    y=self.ldeck.length + self.ldeck.tread_depth - board.width + self.board_overhang - i * (board.width + st_w2w),
+                    y=self.ldeck.length + self.ldeck.tread_depth - board.width
+                    + self.board_overhang - i * (board.width + st_w2w),
                     z=0
                 ),
                 orient_towards=Dim.X,
