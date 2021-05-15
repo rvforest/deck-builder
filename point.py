@@ -55,6 +55,10 @@ class NDPoint:
             results.append(a - b)
         return type(self)(*results)
 
+    def __neg__(self: T) -> T:
+        result = (-v for v in self)
+        return type(self)(*result)
+
     def __len__(self) -> int:
         return self.ndim
 
