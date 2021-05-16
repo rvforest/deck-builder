@@ -229,7 +229,8 @@ class LDeckFrame:
                 Point3D(-0.435, self.ldeck.length + 2.7, 0),
                 rotate=135,
                 start_miter='down',
-                end_miter='down'
+                end_miter='down',
+                layer=Layer.STAIRS
             )
         ])
         corner_support += ShapeCollection([
@@ -240,7 +241,8 @@ class LDeckFrame:
                 Point3D(-0.435, self.ldeck.length + 0.4, 0),
                 rotate=135,
                 start_miter='down',
-                end_miter='up'
+                end_miter='up',
+                layer=Layer.STAIRS
             )
         ])
         stairs += b1 + b2 + corner_support
@@ -403,7 +405,7 @@ class LDecking:
                     z=0
                 ),
                 orient_towards=Dim.X,
-                layer=Layer.STAIRS,
+                layer=Layer.STAIR_TREADS,
                 end_miter='up',
                 color=BROWN
             )
@@ -418,7 +420,7 @@ class LDecking:
                     z=0
                 ),
                 orient_towards=Dim.X,
-                layer=Layer.STAIRS
+                layer=Layer.STAIR_TREADS
             )
         ])
         stair_treads += ShapeCollection([
@@ -432,7 +434,7 @@ class LDecking:
                     y=self.cutout_y - self.ldeck.tread_depth - self.board_overhang,
                     z=0
                 ),
-                layer=Layer.STAIRS,
+                layer=Layer.STAIR_TREADS,
                 orient_towards=Dim.Y,
                 color=BROWN,
                 start_miter='up'
@@ -457,7 +459,7 @@ class LDecking:
                     z=0
                 ),
                 orient_towards=Dim.X,
-                layer=Layer.STAIRS,
+                layer=Layer.STAIR_TREADS,
                 start_miter='down',
                 end_miter='down' if i == 0 else None,
                 color=BROWN
@@ -477,7 +479,7 @@ class LDecking:
                     y=self.ldeck.length + self.ldeck.tread_depth + self.board_overhang - 2 * board.width - st_w2w,
                     z=0
                 ),
-                layer=Layer.STAIRS,
+                layer=Layer.STAIR_TREADS,
                 orient_towards=Dim.Y,
                 color=BROWN,
                 end_miter='up'
@@ -499,7 +501,7 @@ class LDecking:
                     z=0
                 ),
                 orient_towards=Dim.Y,
-                layer=Layer.STAIRS,
+                layer=Layer.STAIR_TREADS,
                 start_miter='down' if i == 0 else None,
                 end_miter='down',
                 color=BROWN
@@ -515,7 +517,7 @@ class LDecking:
                 y=self.ldeck.length - self.ldeck.stairs2_y_offset - self.board_overhang,
                 z=0
             ),
-            layer=Layer.STAIRS,
+            layer=Layer.STAIR_TREADS,
             orient_towards=Dim.X,
             color=BROWN,
             start_miter='up'
