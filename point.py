@@ -68,6 +68,14 @@ class NDPoint:
                 return True
         return False
 
+    def __str__(self):
+        s = ', '.join(str(round(i, 2)) for i in self)
+        return f"({s})"
+
+    def translate(self: T, *args) -> T:
+        new_coord = [arg + pt for arg, pt in zip(args, self)]
+        return type(self)(*new_coord)
+
 
 class Point3D(NDPoint):
 
