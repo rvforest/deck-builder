@@ -448,7 +448,8 @@ class LDecking:
             MiteredBoard(
                 board.width,
                 board.height,
-                self.ldeck.stairs2_x_offset + 2 * self.board_overhang - mgap - i * (board.width + st_w2w),
+                self.ldeck.stairs2_x_offset + 2 * self.board_overhang - 2 * mgap - i * (board.width + st_w2w)
+                - (0 if i == 0 else (board.width + self.e2e_gap)),
                 Point3D(
                     x=-self.ldeck.tread_depth - self.board_overhang + mgap + i * (board.width + st_w2w),
                     y=self.ldeck.length + self.ldeck.tread_depth - board.width
@@ -458,9 +459,29 @@ class LDecking:
                 orient_towards=Dim.X,
                 layer=Layer.STAIRS,
                 start_miter='down',
+                end_miter='down' if i == 0 else None,
                 color=BROWN
             )
             for i in range(2)
+        ])
+
+        stair_treads += ShapeCollection([
+            MiteredBoard(
+                board.width,
+                board.height,
+                2 * board.width + st_w2w - mgap,
+                Point3D(
+                    x=-self.ldeck.tread_depth - self.board_overhang + mgap + board.width + st_w2w
+                    + self.ldeck.stairs2_x_offset + 2 * self.board_overhang - 2.5 * mgap - (board.width + st_w2w)
+                    - board.width + self.e2e_gap,
+                    y=self.ldeck.length + self.ldeck.tread_depth + self.board_overhang - 2 * board.width - st_w2w,
+                    z=0
+                ),
+                layer=Layer.STAIRS,
+                orient_towards=Dim.Y,
+                color=BROWN,
+                end_miter='up'
+            )
         ])
 
         stair_treads += ShapeCollection([
@@ -469,19 +490,36 @@ class LDecking:
                 board.width,
                 board.height,
                 self.ldeck.stairs2_y_offset + self.ldeck.tread_depth
-                + 2 * self.board_overhang - i * (board.width + st_w2w) - mgap,
+                + 2 * self.board_overhang - i * (board.width + st_w2w) - mgap
+                - (mgap if i == 0 else board.width + self.e2e_gap),
                 Point3D(
                     x=-self.ldeck.tread_depth - self.board_overhang + i * (board.width + st_w2w),
-                    y=self.ldeck.length - self.ldeck.stairs2_y_offset - self.board_overhang,
+                    y=self.ldeck.length - self.ldeck.stairs2_y_offset - self.board_overhang
+                    + (mgap if i == 0 else board.width + self.e2e_gap),
                     z=0
                 ),
                 orient_towards=Dim.Y,
                 layer=Layer.STAIRS,
+                start_miter='down' if i == 0 else None,
                 end_miter='down',
                 color=BROWN
             )
             for i in range(2)
         ])
+        stair_treads += ShapeCollection([MiteredBoard(
+            board.width,
+            board.height,
+            2 * board.width + st_w2w - mgap,
+            Point3D(
+                x=-self.ldeck.tread_depth - self.board_overhang + mgap,
+                y=self.ldeck.length - self.ldeck.stairs2_y_offset - self.board_overhang,
+                z=0
+            ),
+            layer=Layer.STAIRS,
+            orient_towards=Dim.X,
+            color=BROWN,
+            start_miter='up'
+        )])
         boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
 
         # picture frame
