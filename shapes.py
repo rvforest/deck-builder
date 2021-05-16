@@ -211,6 +211,11 @@ class ShapeCollection:
         return ShapeCollection(self._shapes.copy())
 
 
+class Drawable(Protocol):
+    def shape(self) -> ShapeCollection:
+        raise NotImplementedError
+
+
 if __name__ == '__main__':
     pass
 
