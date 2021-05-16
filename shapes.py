@@ -2,6 +2,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, List, Tuple
 
+import numpy as np
 from ezdxf.layouts import Modelspace
 import solid as s
 import solid.utils as su
@@ -81,12 +82,26 @@ class Cuboid(Shape):
         return trace_rectangle(args[0], args[1], position_2d, h_invert=h_invert)
 
     def render_dxf(self, plane: Dim, msp: Modelspace):
-        path = self._get_path(plane)
+
+        if (self.rotate is not None) and (plane is Dim.Z):
+            path = self.translate(*-self.position)._get_path(plane)
+            print([str(i) for i in path])
+            t = np.deg2rad(self.rotate)
+            m_rot = np.array([[np.cos(t), -np.sin(t)], [np.sin(t), np.cos(t)]])
+            tmp_arr = np.array(path)
+            print(tmp_arr)
+            rotated_arr = (m_rot @ tmp_arr.T).T
+            print(rotated_arr)
+            print(*self.position.get_2d_point(Dim.Z))
+            result = [Point2D(i, j).translate(*self.position.get_2d_point(Dim.Z)) for i, j in rotated_arr]
+            print([str(i) for i in result])
+        else:
+            result = self._get_path(plane)
 
         dxfattrib = {}
         if self.layer:
             dxfattrib['layer'] = self.layer.value
-        msp.add_lwpolyline(path, dxfattribs=dxfattrib)
+        msp.add_lwpolyline(result, dxfattribs=dxfattrib)
 
     def translate(self, x: float, y: float, z: float) -> Cuboid:
         return Cuboid(
@@ -218,8 +233,3 @@ class Drawable(Protocol):
 
 if __name__ == '__main__':
     pass
-
-
-class Drawable(Protocol):
-    def shape(self) -> ShapeCollection:
-        raise NotImplementedError
