@@ -639,7 +639,11 @@ class LDeckOnBlocks(Deck):
         self.cutout_x = cutout_x
         self.cutout_y = cutout_y
         self.tread_depth = tread_depth
+
         self.tread_width = tread_width
+        if self.tread_width is None:
+            self.tread_width = cutout_x
+
         self.stairs2_x_offset = stair2_x_offset
         self.stairs2_y_offset = stair2_y_offset
         super().__init__(*args, **kwargs)
