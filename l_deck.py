@@ -153,8 +153,12 @@ class LDeckFrame:
             )
         ])
         # Blocking for stairs
-        n_blocking_boards_stairs = n_members(self.ldeck.tread_width, joist.width, max_span=12)
-        blocking_spacing = oc_spacing(self.ldeck.tread_width, joist.width, n_blocking_boards_stairs)
+        len_to_block = (
+                self.ldeck.tread_width + LDecking.board_overhang
+                - self.ldeck.decking_board_class.width + joist.width / 2
+        )
+        n_blocking_boards_stairs = n_members(len_to_block, joist.width, max_span=12)
+        blocking_spacing = oc_spacing(len_to_block, joist.width, n_blocking_boards_stairs)
         stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
         print(f"Stair blocking len: {stair_blocking_len}")
         stairs += ShapeCollection([
@@ -169,6 +173,19 @@ class LDeckFrame:
                 layer=Layer.STAIRS
             )
             for i in range(n_blocking_boards_stairs)
+        ])
+        # Manually place the end board
+        stairs += ShapeCollection([
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    x=self.ldeck.width - self.ldeck.cutout_x + self.ldeck.tread_width - joist.width,
+                    y=self.cutout_y - joist.width - stair_blocking_len,
+                    z=0
+                ),
+                orient_towards=Dim.Y,
+                layer=Layer.STAIRS
+            )
         ])
 
         stairs = stairs.translate(0, 0, -STAIR_OFFSET)
@@ -278,8 +295,34 @@ class LDeckFrame:
                 layer=Layer.STAIRS
             )
         ])
-        stairs += b1 + b2 + corner_support
 
+        end_support = ShapeCollection([
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    # x=-self.ldeck.decking_board_class.width + joist.width / 2,
+                    x=-self.ldeck.tread_depth + joist.width,
+                    y=self.ldeck.length - self.ldeck.stairs2_y_offset - LDecking.board_overhang
+                    + self.ldeck.decking_board_class.width + LDecking.e2e_gap
+                    - joist.width / 2,
+                    z=0
+                ),
+                layer=Layer.STAIRS,
+                orient_towards=Dim.X
+            ),
+            joist(
+                stair_blocking_len,
+                Point3D(
+                    x=self.ldeck.stairs2_x_offset - self.ldeck.decking_board_class.width - self.ldeck.tread_depth,
+                    y=self.ldeck.length + joist.width,
+                    z=0
+                ),
+                layer=Layer.STAIRS,
+                orient_towards=Dim.Y
+            )
+        ])
+
+        stairs += b1 + b2 + corner_support + end_support
         stairs = stairs.translate(0, 0, -STAIR_OFFSET)
         frame += stairs
         return frame
@@ -624,7 +667,7 @@ class LDeckOnBlocks(Deck):
             cutout_x,
             cutout_y,
             tread_depth=11,
-            tread_width=38,
+            tread_width=None,
             stair2_x_offset=ft(8),
             stair2_y_offset=ft(8),
             **kwargs
