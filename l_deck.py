@@ -191,7 +191,9 @@ class LDeckFrame:
         stairs += stairs.copy().translate(self.ldeck.tread_depth - joist.width, 0, 0)
 
         n_blocking_boards_stairs = n_members(ylen - self.ldeck.tread_depth + joist.width, joist.width, max_span=12)
-        blocking_spacing = oc_spacing(ylen - self.ldeck.tread_depth + joist.width, joist.width, n_blocking_boards_stairs)
+        blocking_spacing = oc_spacing(
+            ylen - self.ldeck.tread_depth + joist.width, joist.width, n_blocking_boards_stairs
+        )
         stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
         stairs += ShapeCollection([
             joist(
