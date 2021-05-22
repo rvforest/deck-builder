@@ -4,6 +4,7 @@ from typing import Protocol, Callable
 
 import ezdxf
 from ezdxf.layouts import Modelspace
+import ezdxf.zoom
 import solid as s
 
 from layers import Layer
@@ -24,6 +25,7 @@ class DXFWritable(Protocol):
 
 def write_dxf_doc(obj: DXFWritable, plane: Dim, filename: str):
     doc = ezdxf.new()
+    doc.header['$INSUNITS'] = 1  # Doc in inches
     for layer in Layer:
         doc.layers.new(name=layer.value)
     modelspace = doc.modelspace()
