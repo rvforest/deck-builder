@@ -115,6 +115,7 @@ class TrapezoidalPrism(Shape):
             center: bool = True,
             position: Optional[Point3D] = None,
             layer: Layer = None,
+            bottom_layer: Layer = None,
             color: Tuple[float, float, float] = None,
             rotate=None
     ):
@@ -124,6 +125,9 @@ class TrapezoidalPrism(Shape):
         self.center = center
         self.position = position if position is not None else Point3D(0, 0, 0)
         self.layer = layer
+        self.bottom_layer = bottom_layer
+        if self.bottom_layer is None:
+            self.bottom_layer = layer
         self.color = color
         self.rotate = rotate
 
@@ -137,13 +141,13 @@ class TrapezoidalPrism(Shape):
             # Draw top and bottom faces
             path1 = trace_square(self.bottom_square_len, self.position.get_2d_point(plane), self.center)
             path2 = trace_square(self.top_square_len, self.position.get_2d_point(plane), self.center)
-            msp.add_lwpolyline(path1, dxfattribs=dxfattrib)
+            msp.add_lwpolyline(path1, dxfattribs={'layer': self.bottom_layer.value})
             msp.add_lwpolyline(path2, dxfattribs=dxfattrib)
 
             # Connect top and bottom faces with line at each corner
             corners = [(a, b) for a, b in zip(path1, path2)]
             for corner in corners:
-                msp.add_lwpolyline(corner, dxfattribs=dxfattrib)
+                msp.add_lwpolyline(corner, dxfattribs={'layer': self.bottom_layer.value})
         else:
             # Other two sides are identical
             # Adjust so that height is not centered
@@ -179,6 +183,7 @@ class TrapezoidalPrism(Shape):
             self.height,
             position=self.position + Point3D(x, y, z),
             layer=self.layer,
+            bottom_layer=self.bottom_layer,
             color=self.color,
             rotate=self.rotate
         )

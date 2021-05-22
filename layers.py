@@ -3,6 +3,7 @@ from enum import Enum
 
 class Layer(Enum):
     FOOTINGS = "footings"
+    FOOTINGS_BOTTOM = "footings bottom"
     FRAME = "frame"
     DECKING = "decking"
     HOUSE = "house"
