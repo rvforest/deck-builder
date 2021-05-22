@@ -1,3 +1,5 @@
+import math
+
 import solid as s
 from ezdxf.layouts import Modelspace
 from solid import OpenSCADObject, utils as su
@@ -157,7 +159,10 @@ class House(Cuboid):
                 # Door line
                 (
                     Point2D(door_end, House.WALL_Y_START),
-                    Point2D(door_end - 25.5, House.WALL_Y_START - 25.5)
+                    Point2D(
+                        door_end - self.DOOR_WIDTH * math.cos(math.radians(20)),
+                        House.WALL_Y_START - self.DOOR_WIDTH * math.sin(math.radians(20))
+                    )
                 ),
             ]
             for line in door_lines:
