@@ -68,7 +68,7 @@ class House(Cuboid):
     WALL_DECK_GAP = 1
     HOUSE_WALL_LEN = ft(25)
     HOUSE_HEIGHT = 240
-    WALL_THICKNESS = 8
+    WALL_THICKNESS = 6
     WALL_Y_START = -WALL_DECK_GAP - WALL_THICKNESS
 
     THRESHOLD_HEIGHT = 8
@@ -137,14 +137,19 @@ class House(Cuboid):
             )
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
         elif plane == Dim.Z:
-            msp.add_line(
-                (self.WALL_X_START, self.WALL_Y_START),
-                (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START)
-            )
-            msp.add_line(
-                (self.WALL_X_START, self.WALL_Y_START + self.WALL_THICKNESS),
-                (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START + self.WALL_THICKNESS)
-            )
+            for i in range(2):
+                msp.add_line(
+                    (self.WALL_X_START, self.WALL_Y_START + i * self.WALL_THICKNESS),
+                    (self.WINDOW_X_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                )
+                msp.add_line(
+                    (self.WINDOW_X_START + self.WINDOW_WIDTH, self.WALL_Y_START + i * self.WALL_THICKNESS),
+                    (self.DOOR_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                )
+                msp.add_line(
+                    (self.DOOR_START + self.DOOR_WIDTH, self.WALL_Y_START + i * self.WALL_THICKNESS),
+                    (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                )
             # Add Door
             door_end = House.DOOR_START + House.DOOR_WIDTH
             door_lines = [
