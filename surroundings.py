@@ -7,6 +7,7 @@ from layers import Layer
 from paths import trace_rectangle
 from point import Dim, Point3D, Point2D
 from shapes import Shape, Cuboid
+from util import ft
 
 
 class Ground(Shape):
@@ -61,9 +62,9 @@ class Ground(Shape):
 
 class House(Cuboid):
 
-    WALL_X_START = -120
+    WALL_X_START = -ft(3.5)
     WALL_DECK_GAP = 1
-    HOUSE_WALL_LEN = 40 * 12
+    HOUSE_WALL_LEN = ft(25)
     HOUSE_HEIGHT = 240
     WALL_THICKNESS = 8
     WALL_Y_START = -WALL_DECK_GAP - WALL_THICKNESS
@@ -134,7 +135,14 @@ class House(Cuboid):
             )
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
         elif plane == Dim.Z:
-            super().render_dxf(plane, msp)
+            msp.add_line(
+                (self.WALL_X_START, self.WALL_Y_START),
+                (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START)
+            )
+            msp.add_line(
+                (self.WALL_X_START, self.WALL_Y_START + self.WALL_THICKNESS),
+                (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START + self.WALL_THICKNESS)
+            )
             # Add Door
             door_end = House.DOOR_START + House.DOOR_WIDTH
             door_lines = [
