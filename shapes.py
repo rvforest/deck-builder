@@ -36,7 +36,7 @@ class Shape(Protocol):
         return shape
 
     @abstractmethod
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert=False):
         raise NotImplementedError
 
     @abstractmethod
@@ -70,10 +70,10 @@ class Cuboid(Shape):
     def _render_scad(self):
         return su.translate(tuple(self.position))(s.cube(self.lengths))
 
-    def _get_path(self, plane: Dim):
+    def _get_path(self, plane: Dim, invert=False):
         args = [self.lengths[d.value] for d in Dim if d != plane]
         position_2d = self.position.get_2d_point(plane)
-        if plane == Dim.Y:
+        if invert:
             position_2d = position_2d.h_invert()
             h_invert = True
         else:
@@ -81,7 +81,7 @@ class Cuboid(Shape):
 
         return trace_rectangle(args[0], args[1], position_2d, h_invert=h_invert)
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert=False):
 
         if (self.rotate is not None) and (plane is Dim.Z):
             path = self.translate(*-self.position)._get_path(plane)
@@ -91,7 +91,7 @@ class Cuboid(Shape):
             rotated_arr = (m_rot @ tmp_arr.T).T
             result = [Point2D(i, j).translate(*self.position.get_2d_point(Dim.Z)) for i, j in rotated_arr]
         else:
-            result = self._get_path(plane)
+            result = self._get_path(plane, invert)
 
         dxfattrib = {}
         if self.layer:
@@ -131,7 +131,7 @@ class TrapezoidalPrism(Shape):
         self.color = color
         self.rotate = rotate
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert: bool = False):
 
         dxfattrib = {}
         if self.layer:
@@ -152,18 +152,13 @@ class TrapezoidalPrism(Shape):
             # Other two sides are identical
             # Adjust so that height is not centered
             position_2d = self.position.get_2d_point(plane) + Point2D(0, self.height / 2)
-            if plane == Dim.Y:
-                position_2d = position_2d.h_invert()
-                h_invert = True
-            else:
-                h_invert = False
             path = trace_isosceles_trapezoid(
                 self.bottom_square_len,
                 self.top_square_len,
                 self.height,
-                position_2d,
+                position_2d if not invert else position_2d.h_invert(),
                 self.center,
-                h_invert
+                invert
             )
             msp.add_lwpolyline(path, dxfattribs=dxfattrib)
 
@@ -215,9 +210,9 @@ class ShapeCollection:
     def translate(self, x: float, y: float, z: float) -> ShapeCollection:
         return ShapeCollection([shape.translate(x, y, z) for shape in self])
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert: bool = False):
         for shape in self:
-            shape.render_dxf(plane, msp)
+            shape.render_dxf(plane, msp, invert=invert)
 
     def render_scad(self):
         return sum([shape.render_scad() for shape in self])

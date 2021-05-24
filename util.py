@@ -19,17 +19,17 @@ def ft(f):
 class DXFWritable(Protocol):
 
     @abstractmethod
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert: bool = False):
         raise NotImplementedError
 
 
-def write_dxf_doc(obj: DXFWritable, plane: Dim, filename: str):
+def write_dxf_doc(obj: DXFWritable, plane: Dim, filename: str, invert: bool = False):
     doc = ezdxf.new()
     doc.header['$INSUNITS'] = 1  # Doc in inches
     for layer in Layer:
         doc.layers.new(name=layer.value)
     modelspace = doc.modelspace()
-    obj.render_dxf(plane, modelspace)
+    obj.render_dxf(plane, modelspace, invert)
     doc.saveas(filename)
 
 

@@ -38,24 +38,37 @@ class Ground(Shape):
         # noinspection PyTypeChecker
         return s.polyhedron(Ground.ground_points, Ground.ground_faces)
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert=False):
         if plane == Dim.Z:
-            pass
-        elif plane == Dim.X:
-            msp.add_line(
-                Ground.ground_points[0][1:], Ground.ground_points[2][1:], dxfattribs={'layer': Layer.GROUND1.value}
-            )
-            msp.add_line(
-                Ground.ground_points[1][1:], Ground.ground_points[3][1:], dxfattribs={'layer': Layer.GROUND2.value}
-            )
+            return
+
+        if plane == Dim.X:
+            start1 = Ground.ground_points[0][1:]
+            end1 = Ground.ground_points[2][1:]
+            start2 = Ground.ground_points[1][1:]
+            end2 = Ground.ground_points[3][1:]
         elif plane == Dim.Y:
             start = Ground.ground_points[0]
             end = Ground.ground_points[1]
-            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs={'layer': Layer.GROUND1.value})
-
+            start1 = (start[0], start[-1])
+            end1 = (end[0], end[-1])
             start = Ground.ground_points[2]
             end = Ground.ground_points[3]
-            msp.add_line((start[0], start[-1]), (-end[0], end[-1]), dxfattribs={'layer': Layer.GROUND2.value})
+            start2 = (start[0], start[-1])
+            end2 = (end[0], end[-1])
+        else:
+            raise ValueError("Invalid value for `plane`")
+
+        if invert:
+            end1 = (-end1[0], end1[1])
+            end2 = (-end2[0], end2[1])
+
+        msp.add_line(
+            start1, end1, dxfattribs={'layer': Layer.GROUND1.value}
+        )
+        msp.add_line(
+            start2, end2, dxfattribs={'layer': Layer.GROUND2.value}
+        )
 
     def translate(self, x: float, y: float, z: float) -> Shape:
         print('Warning: Ground cannot be moved. No change was made.')
@@ -114,17 +127,19 @@ class House(Cuboid):
         )
         return house
 
-    def render_dxf(self, plane: Dim, msp: Modelspace):
+    def render_dxf(self, plane: Dim, msp: Modelspace, invert: bool = False):
         dxfattrib = {}
         if self.layer:
             dxfattrib['layer'] = self.layer.value
         else:
             dxfattrib['layer'] = Layer.HOUSE.value
+
+        inv = -1 if invert else 1
         if plane == Dim.Y:
             window = trace_rectangle(
                 House.WINDOW_WIDTH,
                 House.WINDOW_HEIGHT,
-                Point2D(-House.WINDOW_X_START, House.WINDOW_Z_START),
+                Point2D(inv * House.WINDOW_X_START, House.WINDOW_Z_START),
                 h_invert=True
             )
             msp.add_lwpolyline(window, dxfattribs=dxfattrib)
@@ -132,7 +147,7 @@ class House(Cuboid):
             door = trace_rectangle(
                 House.DOOR_WIDTH,
                 House.DOOR_HEIGHT,
-                Point2D(-House.DOOR_START, House.THRESHOLD_HEIGHT + House.GROUND_HEIGHT_AT_DOOR),
+                Point2D(inv * House.DOOR_START, House.THRESHOLD_HEIGHT + House.GROUND_HEIGHT_AT_DOOR),
                 h_invert=True
             )
             msp.add_lwpolyline(door, dxfattribs=dxfattrib)
@@ -140,15 +155,15 @@ class House(Cuboid):
             for i in range(2):
                 msp.add_line(
                     (self.WALL_X_START, self.WALL_Y_START + i * self.WALL_THICKNESS),
-                    (self.WINDOW_X_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                    (inv * self.WINDOW_X_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
                 )
                 msp.add_line(
                     (self.WINDOW_X_START + self.WINDOW_WIDTH, self.WALL_Y_START + i * self.WALL_THICKNESS),
-                    (self.DOOR_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                    (inv * self.DOOR_START, self.WALL_Y_START + i * self.WALL_THICKNESS)
                 )
                 msp.add_line(
                     (self.DOOR_START + self.DOOR_WIDTH, self.WALL_Y_START + i * self.WALL_THICKNESS),
-                    (self.WALL_X_START + self.HOUSE_WALL_LEN, self.WALL_Y_START + i * self.WALL_THICKNESS)
+                    (inv * (self.WALL_X_START + self.HOUSE_WALL_LEN), self.WALL_Y_START + i * self.WALL_THICKNESS)
                 )
             # Add Door
             door_end = House.DOOR_START + House.DOOR_WIDTH
@@ -158,14 +173,14 @@ class House(Cuboid):
                     Point2D(House.DOOR_START, House.WALL_Y_START + House.WALL_THICKNESS)
                 ),
                 (
-                    Point2D(door_end, House.WALL_Y_START),
-                    Point2D(door_end, House.WALL_Y_START + House.WALL_THICKNESS)
+                    Point2D(inv * door_end, House.WALL_Y_START),
+                    Point2D(inv * door_end, House.WALL_Y_START + House.WALL_THICKNESS)
                 ),
                 # Door line
                 (
-                    Point2D(door_end, House.WALL_Y_START),
+                    Point2D(inv * door_end, House.WALL_Y_START),
                     Point2D(
-                        door_end - self.DOOR_WIDTH * math.cos(math.radians(20)),
+                        inv * (door_end - self.DOOR_WIDTH * math.cos(math.radians(20))),
                         House.WALL_Y_START - self.DOOR_WIDTH * math.sin(math.radians(20))
                     )
                 ),
@@ -182,13 +197,13 @@ class House(Cuboid):
                     Point2D(House.WINDOW_X_START, House.WALL_Y_START + House.WALL_THICKNESS)
                 ),
                 (
-                    Point2D(window_end, House.WALL_Y_START),
-                    Point2D(window_end, House.WALL_Y_START + House.WALL_THICKNESS)
+                    Point2D(inv * window_end, House.WALL_Y_START),
+                    Point2D(inv * window_end, House.WALL_Y_START + House.WALL_THICKNESS)
                 ),
                 # Mid point line
                 (
                     Point2D(House.WINDOW_X_START, window_half_y),
-                    Point2D(window_end, window_half_y)
+                    Point2D(inv * window_end, window_half_y)
                 ),
             ]
             for line in window_lines:

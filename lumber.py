@@ -53,15 +53,15 @@ class Lumber(Cuboid):
 
         super().__init__(x, y, z, position, layer, color=color, rotate=rotate)
 
-    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None):
+    def render_dxf(self, plane: Dim, msp: Modelspace, layer: str = None, invert: bool = False):
         # First draw Cuboid outline
-        super().render_dxf(plane, msp)
+        super().render_dxf(plane, msp, invert)
 
         # Next draw X if lumber goes into page
         dxfattribs = {'layer': self.layer.value}
         if plane == self.orient_towards:
             position_2d = self.position.get_2d_point(plane)
-            if plane == Dim.Y:
+            if invert:
                 position_2d = position_2d.h_invert()
                 if self.draw_x:
                     msp.add_line(
@@ -126,8 +126,8 @@ class MiteredBoard(Lumber):
             width, height, length, position, layer, orient_towards, draw_x, color, rotate
         )
 
-    def _get_path(self, plane: Dim):
-        path = super()._get_path(plane)
+    def _get_path(self, plane: Dim, invert: bool = False):
+        path = super()._get_path(plane, invert)
 
         indices = {}
         if self.orient_towards == Dim.X:
@@ -205,9 +205,9 @@ class DeckingBoard(Lumber):
 
         super().__init__(width, height, length, position, layer, orient_towards, draw_x, color, rotate)
 
-    def _get_path(self, plane: Dim):
+    def _get_path(self, plane: Dim, invert: bool = False):
         """Don't draw decking gaps in DXF file"""
-        path = super()._get_path(plane)
+        path = super()._get_path(plane, invert)
 
         # Hide gaps in top down view
         if plane == Dim.Z:
