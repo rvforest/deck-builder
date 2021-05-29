@@ -16,10 +16,10 @@ class Ground(Shape):
 
     ground_points = [
         [0, 0, 0],  # Ground at sliding door
-        [20 * 12, 0, -3],  # Ground at kitchen door
-        [0, 16 * 12, -3],  # Ground 16 ft out from sliding door
-        [20 * 12, 16 * 12, -3.5],  # Ground 16 ft out from kitchen door
-        [10 * 12, 8 * 12, -3.5]
+        [ft(19.25), 0, -2],  # Ground at kitchen door
+        [0, ft(16), -2],  # Ground 16 ft out from sliding door
+        [ft(19.25), ft(16), -2.5],  # Ground 16 ft out from kitchen door
+        [ft(10), ft(8), -2.5]
     ]
     ground_faces = [
         [0, 1, 2],
