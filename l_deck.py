@@ -12,7 +12,8 @@ from point import Point3D, Dim
 from shapes import ShapeCollection
 from util import oc_spacing, n_members, ft
 
-STAIR_OFFSET = 4
+STAIR_OFFSET = 3.55
+STAIR_JOIST_HEIGHT = 4
 
 
 class LDeckFrame:
@@ -130,8 +131,10 @@ class LDeckFrame:
             for i in range(n_blocking_boards_at_l)
         ])
         # Stairs
+        stair_joist = joist.copy()
+        stair_joist.height = STAIR_JOIST_HEIGHT
         stairs = ShapeCollection([
-            joist(
+            stair_joist(
                 self.ldeck.tread_width,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x,
@@ -141,7 +144,7 @@ class LDeckFrame:
                 orient_towards=Dim.X,
                 layer=Layer.STAIRS
             ),
-            joist(
+            stair_joist(
                 self.ldeck.tread_width,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x,
@@ -162,7 +165,7 @@ class LDeckFrame:
         stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
         print(f"Stair blocking len: {stair_blocking_len}")
         stairs += ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x + i * blocking_spacing,
@@ -176,7 +179,7 @@ class LDeckFrame:
         ])
         # Manually place the end board
         stairs += ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=self.ldeck.width - self.ldeck.cutout_x + self.ldeck.tread_width - joist.width,
@@ -499,7 +502,11 @@ class LDecking:
                 start_miter='up'
             )
         ])
-        boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
+        boards += stair_treads.translate(
+            0,
+            0,
+            -STAIR_OFFSET - (self.ldeck.joist_class.height - STAIR_JOIST_HEIGHT)
+        )
 
         # 2nd stair treads
         st_w2w = Decking.w2w_gap_min
