@@ -197,7 +197,7 @@ class LDeckFrame:
         # 2nd stairs
         ylen = self.ldeck.stairs2_y_offset + self.ldeck.tread_depth
         stairs = ShapeCollection([
-            joist(
+            stair_joist(
                 ylen,
                 Point3D(
                     x=-self.ldeck.tread_depth,
@@ -216,7 +216,7 @@ class LDeckFrame:
         )
         stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
         stairs += ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=-self.ldeck.tread_depth + joist.width,
@@ -230,7 +230,7 @@ class LDeckFrame:
         ])
         # Manually set end board
         stairs += ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=-self.ldeck.tread_depth + joist.width,
@@ -244,7 +244,7 @@ class LDeckFrame:
 
         xlen = self.ldeck.stairs2_x_offset - self.ldeck.tread_depth
         b1 = ShapeCollection([
-            joist(
+            stair_joist(
                 xlen,
                 Point3D(
                     x=0,
@@ -261,7 +261,7 @@ class LDeckFrame:
         blocking_spacing = oc_spacing(xlen, joist.width, n_blocking_boards_stairs)
         stair_blocking_len = self.ldeck.tread_depth - 2 * joist.width
         stairs += ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=i * blocking_spacing,
@@ -277,7 +277,7 @@ class LDeckFrame:
         corner_support = ShapeCollection([
             MiteredBoard(
                 joist.width,
-                joist.height,
+                stair_joist.height,
                 11.15,
                 Point3D(-0.435, self.ldeck.length + 2.7, 0),
                 rotate=135,
@@ -289,7 +289,7 @@ class LDeckFrame:
         corner_support += ShapeCollection([
             MiteredBoard(
                 joist.width,
-                joist.height,
+                stair_joist.height,
                 math.sqrt(2) * stair_blocking_len,
                 Point3D(-joist.width, self.ldeck.length + joist.width, 0),
                 rotate=135,
@@ -300,7 +300,7 @@ class LDeckFrame:
         ])
 
         end_support = ShapeCollection([
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     # x=-self.ldeck.decking_board_class.width + joist.width / 2,
@@ -313,7 +313,7 @@ class LDeckFrame:
                 layer=Layer.STAIRS,
                 orient_towards=Dim.X
             ),
-            joist(
+            stair_joist(
                 stair_blocking_len,
                 Point3D(
                     x=self.ldeck.stairs2_x_offset - self.ldeck.decking_board_class.width - self.ldeck.tread_depth,
@@ -588,8 +588,7 @@ class LDecking:
             color=BROWN,
             start_miter='up'
         )])
-        boards += stair_treads.translate(0, 0, -STAIR_OFFSET)
-
+        boards += stair_treads.translate(0, 0, -STAIR_OFFSET - (self.ldeck.joist_class.height - STAIR_JOIST_HEIGHT))
         # picture frame
         boards += ShapeCollection([
             MiteredBoard(
