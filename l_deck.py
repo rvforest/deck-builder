@@ -345,32 +345,12 @@ class LDecking:
         self.cutout_x = ldeck.cutout_x
         self.cutout_y = ldeck.cutout_y
 
-        self._w2w_gap = None
         self._n_boards1 = None
         self._n_boards2 = None
 
     @property
     def w2w_gap(self):
-        if self._w2w_gap is None:
-            board = self.ldeck.decking_board_class
-            len_to_deck = self.cutout_y - LDecking.decking_start - self.board_overhang
-            n_boards = math.floor(len_to_deck / board.width)
-            gap = (len_to_deck - board.width * n_boards) / n_boards
-
-            if gap < Decking.w2w_gap_min:
-                n_boards -= 1
-                gap = (len_to_deck - board.width * n_boards) / n_boards
-
-            if gap > Decking.w2w_gap_max:
-                raise ValueError(
-                    'Could not find gap to match deck dimensions. '
-                    f'Required gap is {gap:.2f}" but max gap size is {Decking.w2w_gap_max}"'
-                )
-
-            self._w2w_gap = gap
-            print(f'Width-to-width decking gap: {gap:.3f}"')
-
-        return self._w2w_gap
+        return 0.25
 
     def _n_boards(self, length: float) -> float:
         return length / (self.section1.decking_board_class.width + self.w2w_gap)
