@@ -27,7 +27,7 @@ d2 = LDeckOnBlocks(
     joist_overhang=16,
     beam_overhang=6,
     joist_class=TwoBySix,
-    outer_joist_class=TwoBySix,
+    outer_joist_class=TwoByEight,
     decking_board_class=TrexBoard,
     footing_class=DeckBlockFactory()
 )

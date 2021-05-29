@@ -96,7 +96,7 @@ class LDeckFrame:
                 position=Point3D(
                     x=self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width,
                     y=self.section2.outer_joist_class.width,
-                    z=0
+                    z=joist.height - self.section2.outer_joist_class.height
                 ),
                 orient_towards=Dim.Y
             ),
@@ -109,7 +109,7 @@ class LDeckFrame:
                     x=(self.ldeck.width - self.cutout_x - self.section2.outer_joist_class.width
                         - self.ldeck.block_overhang2 + joist.width),
                     y=self.cutout_y,
-                    z=0
+                    z=joist.height - self.section2.outer_joist_class.height
                 ),
                 orient_towards=Dim.X
             )
