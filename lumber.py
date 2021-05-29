@@ -110,7 +110,7 @@ class MiteredBoard(Lumber):
             height: float,
             length: float,
             position: Point3D,
-            layer: Layer = None,
+            layer: Layer = Layer.PICTURE_FRAME,
             orient_towards: Dim = Dim.X,
             draw_x: bool = False,
             color=None,
