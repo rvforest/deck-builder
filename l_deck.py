@@ -7,13 +7,13 @@ from deck import Deck
 from deck_joists_on_blocks import DeckJoistsOnBlocks, DeckBlockFrame
 from decking import Decking
 from layers import Layer
-from lumber import MiteredBoard, DeckingBoard
+from lumber import MiteredBoard, DeckingBoard, LumberSize
 from point import Point3D, Dim
 from shapes import ShapeCollection
 from util import oc_spacing, n_members, ft
 
-STAIR_OFFSET = 3.55
-STAIR_JOIST_HEIGHT = 4
+STAIR_OFFSET = 3.05
+STAIR_JOIST_HEIGHT = LumberSize.FOUR.value
 
 
 class LDeckFrame:
