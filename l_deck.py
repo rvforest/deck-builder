@@ -654,8 +654,8 @@ class LDeckOnBlocks(Deck):
             cutout_y,
             tread_depth=11,
             tread_width=None,
-            stair2_x_offset=ft(6) + 7,
-            stair2_y_offset=ft(6) + 11,
+            stair2_x_offset=ft(7),
+            stair2_y_offset=ft(6) + 7 - 11,
             **kwargs
     ):
         """
