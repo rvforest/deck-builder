@@ -63,8 +63,9 @@ class LDeckFrame:
     def shape(self) -> ShapeCollection:
         joist = self.ldeck.joist_class
         l_blocking_span = self.cutout_y - self.ldeck.joist_overhang + 3 * joist.width / 2
-        n_blocking_boards_at_l = n_members(l_blocking_span, joist.width, max_span=16)
+        n_blocking_boards_at_l = n_members(l_blocking_span, joist.width, max_span=12)
         blocking_spacing = oc_spacing(l_blocking_span, joist.width, n_blocking_boards_at_l)
+        blocking_start = self.section2.deck.joist_overhang - joist.width / 2
         n_blocking_boards_at_l -= 1  # Last blocking board falls on existing rim joist
         print(f"Blocking spacing at L: {blocking_spacing:.2f}")
 
@@ -129,6 +130,19 @@ class LDeckFrame:
                 layer=Layer.BLOCKING
             )
             for i in range(n_blocking_boards_at_l)
+        ])
+        frame += ShapeCollection([
+            self.section2.joist_class(
+                self.ldeck.block_overhang2 - self.section2.outer_joist_class.width,
+                orient_towards=Dim.X,
+                position=Point3D(
+                    x=(self.ldeck.width - self.cutout_x + self.section2.joist_class.width
+                       - self.section2.outer_joist_class.width - self.ldeck.block_overhang2),
+                    y=blocking_start / 2,
+                    z=0
+                ),
+                layer=Layer.BLOCKING
+            )
         ])
         # Stairs
         stair_joist = joist.copy()
