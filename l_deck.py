@@ -390,7 +390,9 @@ class LDecking:
                 - 2 * self.ldeck.decking_board_class.width
                 - 1 * self.w2w_gap
             )
-            last_board_width = (result % 1) * (self.ldeck.decking_board_class.width + self.w2w_gap) - self.w2w_gap
+            last_board_width = (result % 1) * (self.ldeck.decking_board_class.width + self.w2w_gap)
+            if last_board_width >= self.w2w_gap:
+                last_board_width -= self.w2w_gap
             print(f"{int(result)} boards in section 2")
             print(f'Last board ripped to {last_board_width:0.2f}".')
             self._n_boards2 = int(result), last_board_width
