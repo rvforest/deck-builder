@@ -32,9 +32,10 @@ def spaced_positions(start: float, end: float, maximum: float) -> tuple[float, .
         raise LayoutError("spacing inputs must be finite")
     if end <= start or maximum <= 0:
         raise LayoutError("spacing requires end > start and maximum > 0")
-    intervals = math.ceil((end - start) / maximum)
-    if intervals >= MAX_MEMBERS:
+    ratio = (end - start) / maximum
+    if not math.isfinite(ratio) or ratio >= MAX_MEMBERS - 1:
         raise LayoutError("layout exceeds the 10,000 member limit")
+    intervals = math.ceil(ratio)
     return tuple(start + i * (end - start) / intervals for i in range(intervals + 1))
 
 
@@ -59,10 +60,12 @@ def board_widths(span: float, width: float, gap: float) -> tuple[float, ...]:
         raise LayoutError("board fitting inputs must be finite")
     if span <= 0 or width <= 0 or gap < 0:
         raise LayoutError("board fitting requires positive dimensions and a nonnegative gap")
-    count = math.floor((span + gap + TOLERANCE) / (width + gap))
-    if count >= MAX_MEMBERS:
+    pitch = width + gap
+    ratio = (span + gap + TOLERANCE) / pitch
+    if not math.isfinite(pitch) or not math.isfinite(ratio) or ratio >= MAX_MEMBERS:
         raise LayoutError("layout exceeds the 10,000 member limit")
-    remainder = span - count * (width + gap)
+    count = math.floor(ratio)
+    remainder = span - count * pitch
     widths = (width,) * count
     if remainder > TOLERANCE:
         widths += (min(width, remainder),)
@@ -96,6 +99,11 @@ def build_deck(project: Project) -> DeckAssembly:
         run - supports.edge_setback,
         supports.max_spacing,
     )
+    if (
+        joist_positions[1] - joist_positions[0] < supports.base_width - TOLERANCE
+        or support_positions[1] - support_positions[0] < supports.base_width - TOLERANCE
+    ):
+        raise LayoutError("support blocks overlap; increase spacing or reduce block base_width")
     if len(joist_positions) * len(support_positions) > MAX_MEMBERS:
         raise LayoutError("layout exceeds the 10,000 support limit")
     parts: list[Part] = []

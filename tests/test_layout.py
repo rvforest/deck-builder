@@ -108,3 +108,17 @@ def test_layout_limits_are_explicit() -> None:
         spaced_positions(0, 100_000, 1)
     with pytest.raises(LayoutError, match="limit"):
         board_widths(100_000, 1, 0)
+
+
+def test_extreme_spacing_fails_cleanly() -> None:
+    with pytest.raises(LayoutError, match="limit"):
+        spaced_positions(0, 1e308, 1e-308)
+    with pytest.raises(LayoutError, match="limit"):
+        board_widths(1e308, 1e-308, 0)
+
+
+def test_overlapping_supports_are_rejected() -> None:
+    data = project().model_dump()
+    data["framing"]["joists"]["max_spacing"] = 8
+    with pytest.raises(LayoutError, match="overlap"):
+        build_deck(Project.model_validate(data))
