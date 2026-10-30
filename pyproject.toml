@@ -35,12 +35,10 @@ select = ["E", "F", "I", "UP", "B", "SIM", "D"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/**/*.py" = ["D105"]
+"tests/**/*.py" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.lint.extend-per-file-ignores]
-"tests/**/*.py" = ["D"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

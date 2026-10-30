@@ -29,7 +29,7 @@ def _load(config: Path) -> tuple[Project, DeckAssembly]:
         raise typer.Exit(2) from error
 
 
-@app.command()
+@app.command(help="Validate configuration and resolve the layout without writing files.")
 def validate(config: ConfigPath) -> None:
     """Validate configuration and resolve the layout without writing files.
 
@@ -42,7 +42,7 @@ def validate(config: ConfigPath) -> None:
     typer.echo(f"Valid deck: {len(assembly.parts)} parts ({summary})")
 
 
-@app.command()
+@app.command(help="Generate CAD files and an assembly manifest.")
 def export(
     config: ConfigPath,
     output: Annotated[Path, typer.Option(help="Directory for generated files.")] = Path("build"),

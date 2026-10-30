@@ -1,0 +1,59 @@
+# Architecture
+
+```text
+TOML → Project → build_deck → DeckAssembly → OpenSCAD / DXF / JSON
+```
+
+`spec.py` owns the strict, immutable Pydantic configuration schema and cross-field
+validation. TOML is read through the standard library. Config describes layout
+intent; it does not enumerate every board or execute code.
+
+`layout.py` computes part placements using pure spacing and board-fitting
+functions. It currently supports rectangular decks on blocks. Stock dimensions
+are data, and spacing limits come from the project. There is no inherited `Deck`
+hierarchy, cached frame, mutable factory, or renderer dependency in the layout.
+
+`assembly.py` defines immutable parts and assemblies. A part has a deterministic
+ID, role, material, optional cutting metadata, and world-space mesh geometry.
+The manifest makes this intermediate representation inspectable without CAD tools.
+
+`geometry.py` supplies shared meshes and immutable transformations. Internal face
+winding follows the outward right-hand convention. Translation and rotation happen
+before projection, so exporters agree on physical placement. Joist orientation is
+implemented by rotating a common local layout into world coordinates.
+
+`projection.py` defines named views and computes convex silhouettes. Its convex-hull
+implementation is sufficient for boxes and tapered blocks. Future concave parts
+must be decomposed into convex pieces or gain a more capable silhouette algorithm.
+Hidden-line removal and drawing annotations belong here or in drawing policy,
+rather than changing physical geometry.
+
+`exporters/` adapts the assembly to external formats. OpenSCAD source uses native
+polyhedra and reverses winding to match OpenSCAD's convention. DXF uses ezdxf,
+applies inch units, and preserves part roles and IDs. Exporters do not choose
+member spacing or reconstruct layout. `cli.py` uses Typer to load, validate,
+build, and export, reporting input and filesystem failures without tracebacks.
+
+## Extending the engine
+
+Add a configuration field only when the engine implements and tests its behavior.
+Keep project-specific numbers out of library code. New footprint and support
+systems should return the same assembly representation; a separate planner is
+appropriate when the layout rules differ substantially.
+
+The next useful features are perimeter borders, stair assemblies attached to named
+boundaries, explicit placement overrides, and concave footprints with defined
+framing connections. Each needs layout rules as well as a schema. Adding polygon
+vertices alone does not provide a framing algorithm for an arbitrary polygon.
+
+Tests should exercise useful invariants: spacing limits, fit and clearance,
+positive member dimensions, aligned supports, preserved metadata, consistent
+projections, and CAD entities after a file round trip. Avoid relying on complete
+DXF file snapshots, because generated metadata changes independently of geometry.
+
+## Original code
+
+`legacy/` preserves the original scripts without changes. It is reference material
+for future features, not a compatibility layer. The new engine has no requirement
+to reproduce the old L-shaped project exactly. Legacy scripts are excluded from
+packaging, Ruff, ty, and pytest collection.
