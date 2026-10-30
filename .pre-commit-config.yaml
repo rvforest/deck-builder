@@ -1,0 +1,28 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff lint
+        entry: uv run --locked ruff check
+        language: system
+        types_or: [python, pyi]
+        exclude: ^legacy/
+      - id: ruff-format
+        name: Ruff format
+        entry: uv run --locked ruff format --check
+        language: system
+        types_or: [python, pyi]
+        exclude: ^legacy/
+      - id: ty
+        name: ty type check
+        entry: uv run --locked ty check
+        language: system
+        pass_filenames: false
+        types_or: [python, pyi, toml]
+        exclude: ^legacy/
+      - id: pytest
+        name: pytest
+        entry: uv run --locked pytest
+        language: system
+        pass_filenames: false
+        always_run: true
