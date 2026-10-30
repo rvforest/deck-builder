@@ -19,3 +19,6 @@ offset = 24
 width = 48
 tread_depth = 11
 max_rise = 7.75
+
+[exports]
+dimensions = true

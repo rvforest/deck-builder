@@ -49,7 +49,8 @@ Explicit support locations and extra blocking are supported; see
 validated against joist alignment, coverage, spacing, and framing intersections.
 
 DXF output shows each part's projected outline on a layer named by its role.
-It includes hidden parts and does not add dimensions or remove hidden lines.
+It includes hidden parts and does not remove hidden lines. Set
+`dimensions = true` in `[exports]` to add overall deck dimensions.
 
 See the [configuration reference](docs/configuration.md) for defaults and layout
 rules, and the [architecture notes](docs/architecture.md) for extension points.

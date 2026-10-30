@@ -35,7 +35,7 @@ def export_project(project: Project, assembly: DeckAssembly, output: Path) -> tu
     if "dxf" in project.exports.formats:
         for selected in project.exports.views:
             path = output / f"{selected}.dxf"
-            render_dxf(assembly, View(selected)).saveas(path)
+            render_dxf(assembly, View(selected), dimensions=project.exports.dimensions).saveas(path)
             paths.append(path)
     manifest = output / "assembly.json"
     manifest.write_text(

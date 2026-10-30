@@ -161,6 +161,7 @@ class Exports(ConfigModel):
         "left",
         "right",
     )
+    dimensions: bool = False
 
     @field_validator("formats", "views", mode="before")
     @classmethod

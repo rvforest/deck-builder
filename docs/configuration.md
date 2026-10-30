@@ -47,6 +47,7 @@ for a typical project.
 | `decking.border` | `rows` | `0` | Number of mitered border rows, from zero to ten |
 | `exports` | `formats` | `["scad", "dxf"]` | Nonempty selection of supported formats |
 | `exports` | `views` | `["top", "front", "left", "right"]` | Nonempty DXF view selection; `"back"` is also available |
+| `exports` | `dimensions` | `false` | Add overall deck dimensions to DXF views |
 
 All dimensions must be positive except gaps, which may be zero. Export selections
 must not contain duplicates. Widths and heights are actual dimensions; nominal
@@ -216,3 +217,18 @@ remove or replace calculated joists, nor determine connection hardware.
 
 See [the complete manual layout](../examples/manual-layout.toml) for a valid set
 of supports and blocking between adjacent joists.
+
+## Drawing dimensions
+
+```toml
+[exports]
+dimensions = true
+```
+
+This adds two native DXF `DIMENSION` entities per view, on the `dimensions` layer.
+Top views measure footprint width and length. Elevations measure the deck's plan
+extent and finished surface height above its datum. Measurements are in inches;
+stairs and projecting footings do not enlarge the annotated deck footprint.
+Opposing views use the same measurements, and assembly translations preserve
+them. Dimension geometry is rendered into DXF blocks for CAD viewer compatibility.
+Individual cuts, connection details, stair rises, and hidden lines are not annotated.
