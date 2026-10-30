@@ -8,7 +8,9 @@ from typing import Literal
 
 from deck_builder.geometry import Mesh, Vec3
 
-Role = Literal["rim", "joist", "decking", "support", "border", "stair_frame", "stair_tread"]
+Role = Literal[
+    "rim", "joist", "decking", "support", "border", "stair_frame", "stair_tread", "blocking"
+]
 
 
 @dataclass(frozen=True)

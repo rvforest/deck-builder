@@ -1,8 +1,10 @@
 """Rectangular deck layout. Spacing limits are project inputs, not span tables."""
 
 from deck_builder.assembly import Boundary, DeckAssembly, Part
-from deck_builder.geometry import Vec3, box, tapered_block
-from deck_builder.spacing import MAX_MEMBERS, TOLERANCE, LayoutError, spaced_positions
+from deck_builder.blocking import build_blocking
+from deck_builder.blocks import build_supports
+from deck_builder.geometry import Vec3, box
+from deck_builder.spacing import spaced_positions
 from deck_builder.spec import LUMBER_DIMENSIONS, Project
 from deck_builder.stairs import build_stair
 from deck_builder.surface import build_surface
@@ -22,7 +24,6 @@ def build_deck(project: Project) -> DeckAssembly:
     """
     footprint = project.deck.footprint
     joists = project.framing.joists
-    supports = project.framing.supports
     decking = project.decking
     thickness, height = LUMBER_DIMENSIONS[joists.size]
     cross, run = footprint.width, footprint.length
@@ -30,18 +31,6 @@ def build_deck(project: Project) -> DeckAssembly:
         cross, run = run, cross
     joist_bottom = project.deck.elevation - decking.thickness - height
     joist_positions = spaced_positions(0, cross - thickness, joists.max_spacing)
-    support_positions = spaced_positions(
-        supports.edge_setback,
-        run - supports.edge_setback,
-        supports.max_spacing,
-    )
-    if (
-        joist_positions[1] - joist_positions[0] < supports.base_width - TOLERANCE
-        or support_positions[1] - support_positions[0] < supports.base_width - TOLERANCE
-    ):
-        raise LayoutError("support blocks overlap; increase spacing or reduce block base_width")
-    if len(joist_positions) * len(support_positions) > MAX_MEMBERS:
-        raise LayoutError("layout exceeds the 10,000 support limit")
     parts: list[Part] = []
 
     def member(
@@ -74,20 +63,8 @@ def build_deck(project: Project) -> DeckAssembly:
             run - 2 * thickness,
             run - 2 * thickness,
         )
-        for j, along in enumerate(support_positions):
-            geometry = tapered_block(
-                supports.base_width, supports.top_width, supports.block_height
-            ).translated(
-                Vec3(
-                    position + thickness / 2,
-                    along,
-                    joist_bottom - supports.block_height,
-                )
-            )
-            if joists.direction == "x":
-                geometry = geometry.rotated_z(90).translated(Vec3(run, 0, 0))
-            parts.append(Part(f"support/{i:04d}/{j:04d}", "support", "concrete", geometry))
-
+    parts.extend(build_blocking(project, tuple(parts)))
+    parts.extend(build_supports(project, joist_positions))
     width, length = footprint.width, footprint.length
     boundaries = (
         Boundary("front", Vec3(0, 0, 0), Vec3(width, 0, 0)),

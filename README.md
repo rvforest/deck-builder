@@ -39,10 +39,14 @@ uv run deck-builder export examples/border-and-stairs.toml --output build/stairs
 Spacing limits are explicit project inputs; the engine does not calculate loads,
 select structural spans, or enforce building codes. Blocks have flat bearing tops
 and uniform height. Stock length limits, joints, hardware, sloping terrain,
-stringer stairs, railings, automatic border backing, concave footprints, and
-manual placement overrides are not yet implemented. Unsupported configuration
+stringer stairs, railings, automatic border backing, and concave footprints are
+not yet implemented. Unsupported configuration
 fields are rejected. Stair framing is a stack of fully decked box platforms;
 frame boards are ripped to match equal rise heights.
+
+Explicit support locations and extra blocking are supported; see
+[examples/manual-layout.toml](examples/manual-layout.toml). Manual placements are
+validated against joist alignment, coverage, spacing, and framing intersections.
 
 DXF output shows each part's projected outline on a layer named by its role.
 It includes hidden parts and does not add dimensions or remove hidden lines.

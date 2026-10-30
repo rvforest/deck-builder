@@ -47,6 +47,14 @@ class Joists(ConfigModel):
     material: str = Field(default="lumber", min_length=1)
 
 
+class SupportLocation(ConfigModel):
+    """A named manual support center in world plan coordinates."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    x: NonNegative
+    y: NonNegative
+
+
 class Supports(ConfigModel):
     """Simplified tapered blocks beneath each joist at specified intervals."""
 
@@ -56,13 +64,35 @@ class Supports(ConfigModel):
     block_height: Positive = 7.75
     base_width: Positive = 10.75
     top_width: Positive = 8
+    locations: (
+        Annotated[tuple[SupportLocation, ...], Field(min_length=1, max_length=10_000)] | None
+    ) = None
+
+    @field_validator("locations", mode="before")
+    @classmethod
+    def freeze_locations(cls, value: object) -> object:
+        """Convert manual TOML support arrays to immutable sequences."""
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def check_taper(self) -> Self:
         """Reject an inverted block taper."""
         if self.top_width > self.base_width:
             raise ValueError("supports.top_width must not exceed base_width")
+        if self.locations and len({p.name for p in self.locations}) != len(self.locations):
+            raise ValueError("manual support names must be unique")
         return self
+
+
+class Blocking(ConfigModel):
+    """A named additional framing member, positioned by its minimum plan corner."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    x: NonNegative
+    y: NonNegative
+    length: Positive
+    direction: Literal["x", "y"] = "x"
+    size: LumberSize | None = None
 
 
 class Framing(ConfigModel):
@@ -70,6 +100,20 @@ class Framing(ConfigModel):
 
     joists: Joists = Field(default_factory=Joists)
     supports: Supports = Field(default_factory=Supports)
+    blocking: Annotated[tuple[Blocking, ...], Field(max_length=1_000)] = ()
+
+    @field_validator("blocking", mode="before")
+    @classmethod
+    def freeze_blocking(cls, value: object) -> object:
+        """Convert TOML blocking arrays into immutable configuration."""
+        return tuple(value) if isinstance(value, list) else value
+
+    @model_validator(mode="after")
+    def check_blocking_names(self) -> Self:
+        """Require stable, unique names for manually placed framing members."""
+        if len({p.name for p in self.blocking}) != len(self.blocking):
+            raise ValueError("blocking names must be unique")
+        return self
 
 
 class Border(ConfigModel):

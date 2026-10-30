@@ -1,0 +1,45 @@
+schema_version = 1
+
+[deck.footprint]
+width = 33.5
+length = 96
+
+[framing.supports]
+edge_setback = 16
+
+[[framing.supports.locations]]
+name = "left-front"
+x = 0.75
+y = 16
+
+[[framing.supports.locations]]
+name = "left-back"
+x = 0.75
+y = 80
+
+[[framing.supports.locations]]
+name = "middle-front"
+x = 16.75
+y = 16
+
+[[framing.supports.locations]]
+name = "middle-back"
+x = 16.75
+y = 80
+
+[[framing.supports.locations]]
+name = "right-front"
+x = 32.75
+y = 16
+
+[[framing.supports.locations]]
+name = "right-back"
+x = 32.75
+y = 80
+
+[[framing.blocking]]
+name = "extra-backing"
+x = 1.5
+y = 40
+length = 14.5
+direction = "x"

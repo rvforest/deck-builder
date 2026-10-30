@@ -12,6 +12,7 @@ COLORS: dict[Role, tuple[float, float, float]] = {
     "border": (0.40, 0.22, 0.12),
     "stair_frame": (0.72, 0.53, 0.32),
     "stair_tread": (0.45, 0.26, 0.14),
+    "blocking": (0.62, 0.43, 0.25),
 }
 
 

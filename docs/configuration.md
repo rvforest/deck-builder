@@ -171,3 +171,48 @@ separate `stair_frame` and `stair_tread` layers and retain their stair name in I
 The engine supports at most 100 risers and 10,000 parts per stair. It does not
 model handrails, stringers, nosing, fasteners, excavation, or collision clearance
 against the deck's footing blocks or other site objects.
+
+## Explicit support locations and blocking
+
+Normally support rows are calculated automatically. Supplying
+`[[framing.supports.locations]]` replaces the entire automatic grid:
+
+```toml
+[[framing.supports.locations]]
+name = "left-front"
+x = 0.75
+y = 16
+```
+
+Coordinates are world x/y support centers, independent of joist direction. Names
+use the same syntax as stair names, must be unique, and become IDs such as
+`support/left-front`. The array must contain at least one location, and no more
+than 10,000. Every joist needs at least two blocks; centers must align with joist
+centerlines and lie inside the clear run between rims. End distances cannot
+exceed `edge_setback`, neighboring centers along a joist cannot exceed
+`max_spacing`, and square block bases must not overlap. The block geometry and
+elevation still come from the shared support configuration.
+
+Add extra framing members using `[[framing.blocking]]`:
+
+```toml
+[[framing.blocking]]
+name = "extra-backing"
+x = 1.5
+y = 40
+length = 14.5
+direction = "x"
+size = "2x8"
+```
+
+`name`, `x`, `y`, and `length` are required. Direction defaults to `"x"`, and stock
+defaults to the main joists. Coordinates refer to the member's minimum plan
+corner. Its top is aligned with the main frame, and its height must not exceed
+the main joist height. Blocking must fit inside the footprint and must not
+intersect the main frame or other blocking; touching faces are allowed. At most
+1,000 extra members are supported. Parts use the `blocking` layer and IDs such as
+`blocking/extra-backing`. This feature places additional members; it does not
+remove or replace calculated joists, nor determine connection hardware.
+
+See [the complete manual layout](../examples/manual-layout.toml) for a valid set
+of supports and blocking between adjacent joists.

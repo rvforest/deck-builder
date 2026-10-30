@@ -15,6 +15,9 @@ hierarchy, cached frame, mutable factory, or renderer dependency in the layout.
 
 `surface.py` creates interior decking and concentric mitered border rows.
 `stairs.py` creates stacked box stairs attached to named footprint boundaries.
+`blocks.py` resolves automatic or manually specified supports, and `blocking.py`
+places additional members while checking framing intersections. Manual support
+base collisions use spatial hashing to avoid an all-pairs scan.
 The planners share geometry and spacing functions, without depending on exporters.
 
 `assembly.py` defines immutable parts, named boundaries, and assemblies. A part has a deterministic
@@ -45,8 +48,8 @@ Keep project-specific numbers out of library code. New footprint and support
 systems should return the same assembly representation; a separate planner is
 appropriate when the layout rules differ substantially.
 
-The next useful features are explicit placement overrides, automatic border
-backing, stringer stairs, and concave footprints with defined framing connections.
+The next useful features are automatic border backing, stringer stairs,
+and concave footprints with defined framing connections.
 Each needs layout rules as well as a schema. Adding polygon
 vertices alone does not provide a framing algorithm for an arbitrary polygon.
 
