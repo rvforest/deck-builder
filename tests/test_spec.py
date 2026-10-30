@@ -39,7 +39,7 @@ def test_example_loads_with_immutable_exports() -> None:
         ('formats = ["scad", "dxf"]', "formats = []", "nonempty"),
         ('formats = ["scad", "dxf"]', 'formats = ["dxf", "dxf"]', "duplicates"),
         ("width = 144", "width = 144\nwidht = 144", "widht"),
-        ("schema_version = 1", "schema_version = 1\nstairs = []", "stairs"),
+        ("schema_version = 1", "schema_version = 1\nrailings = []", "railings"),
     ],
 )
 def test_invalid_configs_are_rejected(

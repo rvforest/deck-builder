@@ -72,6 +72,12 @@ class Framing(ConfigModel):
     supports: Supports = Field(default_factory=Supports)
 
 
+class Border(ConfigModel):
+    """Concentric mitered rows using the configured decking stock and gap."""
+
+    rows: Annotated[int, Field(ge=0, le=10)] = 0
+
+
 class Decking(ConfigModel):
     """Decking stock and fixed gaps, with a final ripped board when needed."""
 
@@ -80,6 +86,25 @@ class Decking(ConfigModel):
     thickness: Positive = 0.94
     direction: Literal["x", "y"] = "x"
     gap: NonNegative = 0.25
+    border: Border = Field(default_factory=Border)
+
+
+BoundaryName = Literal["front", "right", "back", "left"]
+
+
+class Stair(ConfigModel):
+    """Stacked box stairs attached to a named footprint edge."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    system: Literal["box"] = "box"
+    edge: BoundaryName
+    offset: NonNegative = 0
+    width: Positive = 48
+    tread_depth: Positive = 11
+    max_rise: Positive = 7.75
+    ground_elevation: NonNegative = 0
+    frame_size: LumberSize = "2x8"
+    max_spacing: Positive = 16
 
 
 class Exports(ConfigModel):
@@ -117,6 +142,13 @@ class Project(ConfigModel):
     framing: Framing = Field(default_factory=Framing)
     decking: Decking = Field(default_factory=Decking)
     exports: Exports = Field(default_factory=Exports)
+    stairs: tuple[Stair, ...] = ()
+
+    @field_validator("stairs", mode="before")
+    @classmethod
+    def freeze_stairs(cls, value: object) -> object:
+        """Accept TOML arrays while retaining an immutable stair collection."""
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def check_layout(self) -> Self:
@@ -142,6 +174,29 @@ class Project(ConfigModel):
             raise ValueError("deck elevation would place support blocks below z=0")
         if joists.direction == self.decking.direction:
             raise ValueError("decking must run perpendicular to joists")
+        inset = self.decking.border.rows * (self.decking.width + self.decking.gap)
+        if 2 * inset >= min(footprint.width, footprint.length):
+            raise ValueError("decking border leaves no room for interior boards")
+        names = [stair.name for stair in self.stairs]
+        if len(names) != len(set(names)):
+            raise ValueError("stair names must be unique")
+        for edge in ("front", "right", "back", "left"):
+            attached = sorted((s for s in self.stairs if s.edge == edge), key=lambda s: s.offset)
+            for a, b in zip(attached, attached[1:], strict=False):
+                if a.offset + a.width > b.offset:
+                    raise ValueError(f"stairs {a.name!r} and {b.name!r} overlap")
+        for stair in self.stairs:
+            edge_length = footprint.width if stair.edge in ("front", "back") else footprint.length
+            if stair.offset + stair.width > edge_length:
+                raise ValueError(f"stair {stair.name!r} extends beyond its edge")
+            if stair.ground_elevation >= self.deck.elevation:
+                raise ValueError(f"stair {stair.name!r} ground must be below the deck")
+            if stair.max_rise <= self.decking.thickness:
+                raise ValueError("stair max_rise must exceed decking thickness")
+            if stair.width <= 3 or stair.tread_depth <= 3:
+                raise ValueError("stairs must leave room inside their box framing")
+            if stair.max_spacing < 1.5:
+                raise ValueError("stair max_spacing must be at least the frame thickness")
         return self
 
 

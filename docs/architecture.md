@@ -8,12 +8,16 @@ TOML → Project → build_deck → DeckAssembly → OpenSCAD / DXF / JSON
 validation. TOML is read through the standard library. Config describes layout
 intent; it does not enumerate every board or execute code.
 
-`layout.py` computes part placements using pure spacing and board-fitting
-functions. It currently supports rectangular decks on blocks. Stock dimensions
+`layout.py` orchestrates framing, surface, and stair planners, using pure spacing
+and board-fitting functions in `spacing.py`. It supports rectangular decks on blocks. Stock dimensions
 are data, and spacing limits come from the project. There is no inherited `Deck`
 hierarchy, cached frame, mutable factory, or renderer dependency in the layout.
 
-`assembly.py` defines immutable parts and assemblies. A part has a deterministic
+`surface.py` creates interior decking and concentric mitered border rows.
+`stairs.py` creates stacked box stairs attached to named footprint boundaries.
+The planners share geometry and spacing functions, without depending on exporters.
+
+`assembly.py` defines immutable parts, named boundaries, and assemblies. A part has a deterministic
 ID, role, material, optional cutting metadata, and world-space mesh geometry.
 The manifest makes this intermediate representation inspectable without CAD tools.
 
@@ -41,9 +45,9 @@ Keep project-specific numbers out of library code. New footprint and support
 systems should return the same assembly representation; a separate planner is
 appropriate when the layout rules differ substantially.
 
-The next useful features are perimeter borders, stair assemblies attached to named
-boundaries, explicit placement overrides, and concave footprints with defined
-framing connections. Each needs layout rules as well as a schema. Adding polygon
+The next useful features are explicit placement overrides, automatic border
+backing, stringer stairs, and concave footprints with defined framing connections.
+Each needs layout rules as well as a schema. Adding polygon
 vertices alone does not provide a framing algorithm for an arbitrary polygon.
 
 Tests should exercise useful invariants: spacing limits, fit and clearance,

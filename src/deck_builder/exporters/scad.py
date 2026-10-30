@@ -9,6 +9,9 @@ COLORS: dict[Role, tuple[float, float, float]] = {
     "rim": (0.72, 0.53, 0.32),
     "decking": (0.45, 0.26, 0.14),
     "support": (0.55, 0.55, 0.55),
+    "border": (0.40, 0.22, 0.12),
+    "stair_frame": (0.72, 0.53, 0.32),
+    "stair_tread": (0.45, 0.26, 0.14),
 }
 
 
