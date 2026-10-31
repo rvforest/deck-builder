@@ -1,0 +1,27 @@
+schema_version = 1
+
+[deck]
+elevation = 24
+
+[deck.footprint]
+type = "polygon"
+vertices = [
+    { name = "front", x = 0, y = 0 },
+    { name = "right", x = 240, y = 0 },
+    { name = "notch-bottom", x = 240, y = 96 },
+    { name = "notch-side", x = 144, y = 96 },
+    { name = "back", x = 144, y = 192 },
+    { name = "left", x = 0, y = 192 },
+]
+
+[decking.border]
+rows = 1
+
+[[stairs]]
+name = "entry"
+edge = "notch-bottom"
+offset = 24
+width = 48
+
+[exports]
+dimensions = true

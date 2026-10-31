@@ -9,7 +9,15 @@ from typing import Literal
 from deck_builder.geometry import Mesh, Vec3
 
 Role = Literal[
-    "rim", "joist", "decking", "support", "border", "stair_frame", "stair_tread", "blocking"
+    "rim",
+    "joist",
+    "decking",
+    "support",
+    "border",
+    "stair_frame",
+    "stair_tread",
+    "blocking",
+    "backing",
 ]
 
 
@@ -55,15 +63,32 @@ class Boundary:
 
 
 @dataclass(frozen=True)
+class Connection:
+    """A shared bay seam backed by two touching rim members."""
+
+    id: str
+    start: Vec3
+    end: Vec3
+    members: tuple[str, str]
+    kind: str = "double_rim"
+
+    def translated(self, offset: Vec3) -> Connection:
+        """Translate the seam while preserving its connected part identities."""
+        return replace(self, start=self.start.translated(offset), end=self.end.translated(offset))
+
+
+@dataclass(frozen=True)
 class DeckAssembly:
     """A deterministic, immutable sequence of placed parts."""
 
     parts: tuple[Part, ...]
     boundaries: tuple[Boundary, ...] = ()
+    connections: tuple[Connection, ...] = ()
 
     def translated(self, offset: Vec3) -> DeckAssembly:
         """Return a translated assembly without modifying any source part."""
         return DeckAssembly(
             tuple(part.translated(offset) for part in self.parts),
             tuple(edge.translated(offset) for edge in self.boundaries),
+            tuple(connection.translated(offset) for connection in self.connections),
         )

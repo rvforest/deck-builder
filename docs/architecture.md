@@ -9,7 +9,8 @@ validation. TOML is read through the standard library. Config describes layout
 intent; it does not enumerate every board or execute code.
 
 `layout.py` orchestrates framing, surface, and stair planners, using pure spacing
-and board-fitting functions in `spacing.py`. It supports rectangular decks on blocks. Stock dimensions
+and board-fitting functions in `spacing.py`. It supports rectangles and orthogonal
+polygons on blocks. Stock dimensions
 are data, and spacing limits come from the project. There is no inherited `Deck`
 hierarchy, cached frame, mutable factory, or renderer dependency in the layout.
 
@@ -20,7 +21,20 @@ places additional members while checking framing intersections. Manual support
 base collisions use spatial hashing to avoid an all-pairs scan.
 The planners share geometry and spacing functions, without depending on exporters.
 
-`assembly.py` defines immutable parts, named boundaries, and assemblies. A part has a deterministic
+`plan.py` validates orthogonal rings and provides deterministic rectangular
+partitions and inset outlines using Shapely. `framing.py` builds a rectangular bay;
+`bays.py` partitions concave footprints perpendicular to the joists, frames each
+bay, and records touching double-rim connections. Each bay has its own spacing
+and support grid. This defines the framing at concave junctions instead of merely
+clipping boards to a polygon. Global checks reject supports overlapping across bays.
+
+`backing.py` subtracts existing framing from a continuous bearing band below
+borders and their interior seam. It partitions the remaining region, including
+holes, into rectangular stock pieces without duplicating the existing frame.
+`clearance.py` rejects stair parts entering a concave deck limb or another stair.
+
+`assembly.py` defines immutable parts, named boundaries, bay connections, and assemblies.
+A part has a deterministic
 ID, role, material, optional cutting metadata, and world-space mesh geometry.
 The manifest makes this intermediate representation inspectable without CAD tools.
 
@@ -50,10 +64,12 @@ Keep project-specific numbers out of library code. New footprint and support
 systems should return the same assembly representation; a separate planner is
 appropriate when the layout rules differ substantially.
 
-The next useful features are automatic border backing, stringer stairs,
-and concave footprints with defined framing connections.
-Each needs layout rules as well as a schema. Adding polygon
-vertices alone does not provide a framing algorithm for an arbitrary polygon.
+The implemented configuration-to-export scope includes rectangular and concave
+orthogonal footprints, framing connections, borders with backing, box stairs,
+manual supports and extra blocking, and overall DXF annotations. Future extensions
+include stringer stairs, angled boundaries, stock-length optimization, connection
+hardware, load analysis, and site terrain. These require their own explicit rules;
+they are not implied by accepting a polygon.
 
 Tests should exercise useful invariants: spacing limits, fit and clearance,
 positive member dimensions, aligned supports, preserved metadata, consistent

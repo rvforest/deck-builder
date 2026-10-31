@@ -85,6 +85,29 @@ def test_feature_example_exports_all_roles_and_boundaries(tmp_path: Path) -> Non
     assert len(drawing.modelspace().query("DIMENSION")) == 2
 
 
+@pytest.mark.parametrize("filename", ["l-shaped.toml", "u-shaped.toml"])
+def test_concave_examples_export_connections_backing_and_dimensions(
+    tmp_path: Path,
+    filename: str,
+) -> None:
+    import json
+
+    import ezdxf
+
+    result = runner.invoke(
+        app, ["export", str(EXAMPLE.with_name(filename)), "--output", str(tmp_path)]
+    )
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((tmp_path / "assembly.json").read_text())
+    assert manifest["connections"]
+    assert any(p["role"] == "backing" for p in manifest["parts"])
+    for view in ("top", "front", "left", "right"):
+        drawing = ezdxf.readfile(tmp_path / f"{view}.dxf")
+        assert not drawing.audit().has_errors
+        assert len(drawing.modelspace().query("LWPOLYLINE")) == len(manifest["parts"])
+        assert len(drawing.modelspace().query("DIMENSION")) == 2
+
+
 def test_import_has_no_file_side_effects(tmp_path: Path) -> None:
     # Run outside the repository so incidental writes cannot be hidden by gitignore.
     result = subprocess.run(
