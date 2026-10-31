@@ -1,5 +1,7 @@
 """Explicit additional framing members with geometric placement checks."""
 
+from shapely.geometry import box as plan_box
+
 from deck_builder.assembly import Part
 from deck_builder.geometry import Vec3, box
 from deck_builder.spacing import TOLERANCE, LayoutError
@@ -29,7 +31,9 @@ def build_blocking(project: Project, existing: tuple[Part, ...]) -> tuple[Part, 
         width, length = (
             (block.length, thickness) if block.direction == "x" else (thickness, block.length)
         )
-        if block.x + width > footprint.width or block.y + length > footprint.length:
+        if not footprint.plan().polygon.covers(
+            plan_box(block.x, block.y, block.x + width, block.y + length)
+        ):
             raise LayoutError(f"blocking {block.name!r} extends outside the footprint")
         if height > frame_height:
             raise LayoutError(f"blocking {block.name!r} exceeds the main framing depth")
