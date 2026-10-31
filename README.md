@@ -26,17 +26,31 @@ The package also supports `uv run python -m deck_builder`.
 
 The first version supports rectangular footprints, joists in either direction,
 perimeter framing, tapered support blocks beneath each joist, and perpendicular
-straight decking with fixed gaps and an optional final ripped board. All lengths
-are inches. Finished decking elevation is measured from z=0.
+straight decking with fixed gaps and an optional final ripped board. Mitered
+border rows and stacked box stairs can be added in config. All lengths are inches.
+Finished decking elevation is measured from z=0.
+
+For a bordered deck with stairs:
+
+```sh
+uv run deck-builder export examples/border-and-stairs.toml --output build/stairs/
+```
 
 Spacing limits are explicit project inputs; the engine does not calculate loads,
 select structural spans, or enforce building codes. Blocks have flat bearing tops
 and uniform height. Stock length limits, joints, hardware, sloping terrain,
-stairs, borders, concave footprints, and manual placement overrides are not yet
-implemented. Unsupported configuration fields are rejected.
+stringer stairs, railings, automatic border backing, and concave footprints are
+not yet implemented. Unsupported configuration
+fields are rejected. Stair framing is a stack of fully decked box platforms;
+frame boards are ripped to match equal rise heights.
+
+Explicit support locations and extra blocking are supported; see
+[examples/manual-layout.toml](examples/manual-layout.toml). Manual placements are
+validated against joist alignment, coverage, spacing, and framing intersections.
 
 DXF output shows each part's projected outline on a layer named by its role.
-It includes hidden parts and does not add dimensions or remove hidden lines.
+It includes hidden parts and does not remove hidden lines. Set
+`dimensions = true` in `[exports]` to add overall deck dimensions.
 
 See the [configuration reference](docs/configuration.md) for defaults and layout
 rules, and the [architecture notes](docs/architecture.md) for extension points.

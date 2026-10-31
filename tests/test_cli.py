@@ -68,6 +68,23 @@ def test_cli_help() -> None:
     assert "export" in result.stdout
 
 
+def test_feature_example_exports_all_roles_and_boundaries(tmp_path: Path) -> None:
+    import json
+
+    import ezdxf
+
+    example = EXAMPLE.with_name("border-and-stairs.toml")
+    result = runner.invoke(app, ["export", str(example), "--output", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+    manifest = json.loads((tmp_path / "assembly.json").read_text())
+    assert {p["role"] for p in manifest["parts"]} >= {"border", "stair_frame", "stair_tread"}
+    assert {b["name"] for b in manifest["boundaries"]} == {"front", "right", "back", "left"}
+    drawing = ezdxf.readfile(tmp_path / "top.dxf")
+    assert not drawing.audit().has_errors
+    assert len(drawing.modelspace().query("LWPOLYLINE")) == len(manifest["parts"])
+    assert len(drawing.modelspace().query("DIMENSION")) == 2
+
+
 def test_import_has_no_file_side_effects(tmp_path: Path) -> None:
     # Run outside the repository so incidental writes cannot be hidden by gitignore.
     result = subprocess.run(

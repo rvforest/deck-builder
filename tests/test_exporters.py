@@ -5,7 +5,7 @@ from pathlib import Path
 import ezdxf
 import pytest
 from ezdxf import units
-from ezdxf.entities import LWPolyline
+from ezdxf.entities import Dimension, LWPolyline
 
 from deck_builder.assembly import DeckAssembly, Part
 from deck_builder.exporters.dxf import render_dxf
@@ -96,3 +96,34 @@ def test_selected_outputs_and_manifest(tmp_path: Path) -> None:
     assert manifest["units"] == "inches"
     assert len(manifest["parts"]) == len(assembly.parts)
     assert manifest["parts"][0]["id"] == assembly.parts[0].id
+
+
+@pytest.mark.parametrize(
+    ("view", "expected"),
+    [
+        (View.TOP, (144, 192)),
+        (View.FRONT, (24, 144)),
+        (View.BACK, (24, 144)),
+        (View.LEFT, (24, 192)),
+        (View.RIGHT, (24, 192)),
+    ],
+)
+def test_overall_dimensions_round_trip_in_every_view(
+    tmp_path: Path,
+    view: View,
+    expected: tuple[float, float],
+) -> None:
+    # Translation must not change measurements, including the datum elevation.
+    assembly = build_deck(load_project(EXAMPLE)).translated(Vec3(30, -50, 10))
+    document = render_dxf(assembly, view, dimensions=True)
+    path = tmp_path / f"{view}.dxf"
+    document.saveas(path)
+    restored = ezdxf.readfile(path)
+    assert not restored.audit().has_errors
+    measured = []
+    for entity in restored.modelspace().query("DIMENSION"):
+        assert isinstance(entity, Dimension)
+        measured.append(entity.get_measurement())
+        assert entity.dxf.layer == "dimensions"
+        assert entity.dxf.geometry in restored.blocks
+    assert sorted(measured) == pytest.approx(expected)

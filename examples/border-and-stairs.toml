@@ -1,0 +1,24 @@
+schema_version = 1
+units = "inches"
+
+[deck]
+elevation = 24
+
+[deck.footprint]
+width = 144
+length = 192
+
+[decking.border]
+rows = 1
+
+[[stairs]]
+name = "entry"
+system = "box"
+edge = "front"
+offset = 24
+width = 48
+tread_depth = 11
+max_rise = 7.75
+
+[exports]
+dimensions = true

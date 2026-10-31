@@ -3,7 +3,8 @@ import math
 import pytest
 
 from deck_builder.geometry import Vec3, box
-from deck_builder.layout import LayoutError, board_widths, build_deck, spaced_positions
+from deck_builder.layout import build_deck
+from deck_builder.spacing import LayoutError, board_widths, spaced_positions
 from deck_builder.spec import Project
 
 

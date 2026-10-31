@@ -47,6 +47,14 @@ class Joists(ConfigModel):
     material: str = Field(default="lumber", min_length=1)
 
 
+class SupportLocation(ConfigModel):
+    """A named manual support center in world plan coordinates."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    x: NonNegative
+    y: NonNegative
+
+
 class Supports(ConfigModel):
     """Simplified tapered blocks beneath each joist at specified intervals."""
 
@@ -56,13 +64,35 @@ class Supports(ConfigModel):
     block_height: Positive = 7.75
     base_width: Positive = 10.75
     top_width: Positive = 8
+    locations: (
+        Annotated[tuple[SupportLocation, ...], Field(min_length=1, max_length=10_000)] | None
+    ) = None
+
+    @field_validator("locations", mode="before")
+    @classmethod
+    def freeze_locations(cls, value: object) -> object:
+        """Convert manual TOML support arrays to immutable sequences."""
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def check_taper(self) -> Self:
         """Reject an inverted block taper."""
         if self.top_width > self.base_width:
             raise ValueError("supports.top_width must not exceed base_width")
+        if self.locations and len({p.name for p in self.locations}) != len(self.locations):
+            raise ValueError("manual support names must be unique")
         return self
+
+
+class Blocking(ConfigModel):
+    """A named additional framing member, positioned by its minimum plan corner."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    x: NonNegative
+    y: NonNegative
+    length: Positive
+    direction: Literal["x", "y"] = "x"
+    size: LumberSize | None = None
 
 
 class Framing(ConfigModel):
@@ -70,6 +100,26 @@ class Framing(ConfigModel):
 
     joists: Joists = Field(default_factory=Joists)
     supports: Supports = Field(default_factory=Supports)
+    blocking: Annotated[tuple[Blocking, ...], Field(max_length=1_000)] = ()
+
+    @field_validator("blocking", mode="before")
+    @classmethod
+    def freeze_blocking(cls, value: object) -> object:
+        """Convert TOML blocking arrays into immutable configuration."""
+        return tuple(value) if isinstance(value, list) else value
+
+    @model_validator(mode="after")
+    def check_blocking_names(self) -> Self:
+        """Require stable, unique names for manually placed framing members."""
+        if len({p.name for p in self.blocking}) != len(self.blocking):
+            raise ValueError("blocking names must be unique")
+        return self
+
+
+class Border(ConfigModel):
+    """Concentric mitered rows using the configured decking stock and gap."""
+
+    rows: Annotated[int, Field(ge=0, le=10)] = 0
 
 
 class Decking(ConfigModel):
@@ -80,6 +130,25 @@ class Decking(ConfigModel):
     thickness: Positive = 0.94
     direction: Literal["x", "y"] = "x"
     gap: NonNegative = 0.25
+    border: Border = Field(default_factory=Border)
+
+
+BoundaryName = Literal["front", "right", "back", "left"]
+
+
+class Stair(ConfigModel):
+    """Stacked box stairs attached to a named footprint edge."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    system: Literal["box"] = "box"
+    edge: BoundaryName
+    offset: NonNegative = 0
+    width: Positive = 48
+    tread_depth: Positive = 11
+    max_rise: Positive = 7.75
+    ground_elevation: NonNegative = 0
+    frame_size: LumberSize = "2x8"
+    max_spacing: Positive = 16
 
 
 class Exports(ConfigModel):
@@ -92,6 +161,7 @@ class Exports(ConfigModel):
         "left",
         "right",
     )
+    dimensions: bool = False
 
     @field_validator("formats", "views", mode="before")
     @classmethod
@@ -117,6 +187,13 @@ class Project(ConfigModel):
     framing: Framing = Field(default_factory=Framing)
     decking: Decking = Field(default_factory=Decking)
     exports: Exports = Field(default_factory=Exports)
+    stairs: tuple[Stair, ...] = ()
+
+    @field_validator("stairs", mode="before")
+    @classmethod
+    def freeze_stairs(cls, value: object) -> object:
+        """Accept TOML arrays while retaining an immutable stair collection."""
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def check_layout(self) -> Self:
@@ -142,6 +219,29 @@ class Project(ConfigModel):
             raise ValueError("deck elevation would place support blocks below z=0")
         if joists.direction == self.decking.direction:
             raise ValueError("decking must run perpendicular to joists")
+        inset = self.decking.border.rows * (self.decking.width + self.decking.gap)
+        if 2 * inset >= min(footprint.width, footprint.length):
+            raise ValueError("decking border leaves no room for interior boards")
+        names = [stair.name for stair in self.stairs]
+        if len(names) != len(set(names)):
+            raise ValueError("stair names must be unique")
+        for edge in ("front", "right", "back", "left"):
+            attached = sorted((s for s in self.stairs if s.edge == edge), key=lambda s: s.offset)
+            for a, b in zip(attached, attached[1:], strict=False):
+                if a.offset + a.width > b.offset:
+                    raise ValueError(f"stairs {a.name!r} and {b.name!r} overlap")
+        for stair in self.stairs:
+            edge_length = footprint.width if stair.edge in ("front", "back") else footprint.length
+            if stair.offset + stair.width > edge_length:
+                raise ValueError(f"stair {stair.name!r} extends beyond its edge")
+            if stair.ground_elevation >= self.deck.elevation:
+                raise ValueError(f"stair {stair.name!r} ground must be below the deck")
+            if stair.max_rise <= self.decking.thickness:
+                raise ValueError("stair max_rise must exceed decking thickness")
+            if stair.width <= 3 or stair.tread_depth <= 3:
+                raise ValueError("stairs must leave room inside their box framing")
+            if stair.max_spacing < 1.5:
+                raise ValueError("stair max_spacing must be at least the frame thickness")
         return self
 
 
