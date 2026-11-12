@@ -26,7 +26,7 @@ for a typical project.
 | root | `schema_version` | `1` | Supported configuration version |
 | root | `units` | `"inches"` | The only supported unit system |
 | `deck` | `elevation` | `24` | Top of the finished decking, above z=0 |
-| `deck.footprint` | `type` | `"rectangle"` | Supported footprint shape |
+| `deck.footprint` | `type` | `"rectangle"` | `"rectangle"` or `"polygon"` |
 | `deck.footprint` | `width` | required | Footprint extent along world x |
 | `deck.footprint` | `length` | required | Footprint extent along world y |
 | `framing.joists` | `size` | `"2x8"` | `"2x6"`, `"2x8"`, `"2x10"`, or `"2x12"` |
@@ -45,6 +45,7 @@ for a typical project.
 | `decking` | `direction` | `"x"` | Board length direction, perpendicular to joists |
 | `decking` | `gap` | `0.25` | Fixed gap between neighboring boards; zero is allowed |
 | `decking.border` | `rows` | `0` | Number of mitered border rows, from zero to ten |
+| `decking.border` | `backing` | `true` | Generate continuous bearing below border rows and the inner seam |
 | `exports` | `formats` | `["scad", "dxf"]` | Nonempty selection of supported formats |
 | `exports` | `views` | `["top", "front", "left", "right"]` | Nonempty DXF view selection; `"back"` is also available |
 | `exports` | `dimensions` | `false` | Add overall deck dimensions to DXF views |
@@ -93,7 +94,8 @@ The footprint starts at x=0, y=0; z points up. Named views use these coordinates
 
 Opposite elevations mirror around the world origin, so negative drawing coordinates
 are expected. DXF silhouettes use transformed geometry and are rounded to ten
-decimal places. Layers are `rim`, `joist`, `support`, and `decking`. Each entity's
+decimal places. Core layers are `rim`, `joist`, `support`, and `decking`; optional
+parts add `border`, `backing`, `blocking`, `stair_frame`, and `stair_tread`. Each entity's
 `DECK_BUILDER` extended data stores its assembly part ID.
 
 `validate` resolves the layout and writes no files. `export` creates the output
@@ -118,7 +120,13 @@ rows = 1
 Each border row contains four boards with 45-degree miters. Borders use the
 decking's stock, material, and gap. Interior decking is shortened and inset so it
 does not overlap the borders. Configurations that leave no interior are rejected.
-Border-specific backing and hardware are not automatically added. Cutting metadata
+Continuous backing is generated automatically, using ripped framing stock to
+fill space not already occupied by joists, rims, or explicit blocking. It covers
+all border rows plus half a framing thickness beyond the interior seam, providing
+bearing for the ends of the interior decking. This is a conservative solid backing
+layout rather than an optimization for minimum lumber. Set `backing = false` in
+`[decking.border]` to supply backing manually. Connection hardware is not modeled.
+Cutting metadata
 records miter angles and long-point cut lengths. The `border` DXF layer keeps
 trim distinct from the interior decking.
 
@@ -170,8 +178,10 @@ taller boards than the selected stock is rejected. Frame and tread parts have
 separate `stair_frame` and `stair_tread` layers and retain their stair name in IDs.
 
 The engine supports at most 100 risers and 10,000 parts per stair. It does not
-model handrails, stringers, nosing, fasteners, excavation, or collision clearance
-against the deck's footing blocks or other site objects.
+model handrails, stringers, nosing, fasteners, or excavation. Stairs are checked
+against the main footprint and other stair assemblies, including stairs attached
+inside concave recesses. Clearance against footing blocks and site objects is not
+analyzed.
 
 ## Explicit support locations and blocking
 
@@ -232,3 +242,51 @@ stairs and projecting footings do not enlarge the annotated deck footprint.
 Opposing views use the same measurements, and assembly translations preserve
 them. Dimension geometry is rendered into DXF blocks for CAD viewer compatibility.
 Individual cuts, connection details, stair rises, and hidden lines are not annotated.
+
+## Concave orthogonal footprints
+
+Use named vertices in counterclockwise order. Each vertex names the edge beginning
+at that point and ending at the next vertex; the last edge closes the ring.
+
+```toml
+[deck.footprint]
+type = "polygon"
+vertices = [
+    { name = "front", x = 0, y = 0 },
+    { name = "right", x = 240, y = 0 },
+    { name = "notch-bottom", x = 240, y = 96 },
+    { name = "notch-side", x = 144, y = 96 },
+    { name = "back", x = 144, y = 192 },
+    { name = "left", x = 0, y = 192 },
+]
+```
+
+The ring must be simple and axis aligned, with 4–64 vertices, unique edge names,
+no repeated closing vertex, and no redundant collinear vertices. Minimum x and y
+must both be zero. Holes, diagonal edges, and curved edges are not supported.
+Polygon configurations do not specify `width` or `length`; extents are derived.
+Stair `edge` values reference these names, with the same offset convention as
+rectangles. See the complete [L-shaped](../examples/l-shaped.toml) and
+[U-shaped](../examples/u-shaped.toml) examples.
+
+The planner divides the polygon into rectangular framing bays at footprint
+transitions along the joist direction. Unchanged neighboring spans are merged.
+Every bay is fully framed; adjacent bays share a seam with two touching rims.
+Their part IDs are prefixed by `bay/NNN/`. Manifest `connections` identify the
+seam, its endpoints, the two rim member IDs, and the `double_rim` connection type.
+Hardware for joining these members is not modeled. Connection locations follow
+assembly translations, and shared seams do not create extra surface borders.
+
+Each bay must fit its own end setbacks, support bases, and selected framing stock.
+A valid polygon can therefore be too narrow or short for a selected layout.
+Support bases overlapping across bays are rejected. Manual support locations
+remain world coordinates, must belong to exactly one bay, and must support every
+joist in that bay. Extra blocking is checked against the actual footprint and all
+bay framing. Explicit members that cross a double rim are rejected.
+
+Decking fields are clipped to the footprint and split into rectangular pieces
+where a notch crosses a board row. Borders follow the external perimeter, including
+inside corners. Insets that consume a narrow limb, split the footprint, or change
+the named corner topology are rejected rather than approximated. All physical
+pieces remain convex, so the existing CAD projection works without filling concave
+voids. Overall drawing dimensions measure the polygon's bounding extents.

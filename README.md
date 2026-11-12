@@ -24,25 +24,31 @@ The package also supports `uv run python -m deck_builder`.
 
 ## Supported layouts
 
-The first version supports rectangular footprints, joists in either direction,
-perimeter framing, tapered support blocks beneath each joist, and perpendicular
-straight decking with fixed gaps and an optional final ripped board. Mitered
-border rows and stacked box stairs can be added in config. All lengths are inches.
-Finished decking elevation is measured from z=0.
+Supported footprints are rectangles and named orthogonal polygons, including
+concave L and U shapes. The engine generates framing, tapered support blocks,
+straight decking, mitered borders with automatic backing, and stacked box stairs.
+Both joist directions are supported. All lengths are inches; finished decking
+elevation is measured from z=0.
 
 For a bordered deck with stairs:
 
 ```sh
 uv run deck-builder export examples/border-and-stairs.toml --output build/stairs/
+uv run deck-builder export examples/l-shaped.toml --output build/l-shaped/
+uv run deck-builder export examples/u-shaped.toml --output build/u-shaped/
 ```
 
 Spacing limits are explicit project inputs; the engine does not calculate loads,
 select structural spans, or enforce building codes. Blocks have flat bearing tops
-and uniform height. Stock length limits, joints, hardware, sloping terrain,
-stringer stairs, railings, automatic border backing, and concave footprints are
-not yet implemented. Unsupported configuration
-fields are rejected. Stair framing is a stack of fully decked box platforms;
-frame boards are ripped to match equal rise heights.
+and uniform height. Concave decks are partitioned into rectangular framing bays
+joined by touching double rims; the manifest records those connections. Border
+backing uses continuous bearing assembled from ripped framing stock. Stair framing
+is a stack of fully decked box platforms, with boards ripped to match equal rises.
+
+Angled or curved footprints, holes, stringer stairs, railings, purchased stock
+length limits, hardware, load calculations, and terrain modeling are outside the
+current supported profile. Unsupported configuration fields and layouts that
+cannot accommodate the selected framing are rejected.
 
 Explicit support locations and extra blocking are supported; see
 [examples/manual-layout.toml](examples/manual-layout.toml). Manual placements are

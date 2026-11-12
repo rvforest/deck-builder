@@ -6,6 +6,8 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from deck_builder.plan import Plan, validate_polygon
+
 Positive = Annotated[float, Field(gt=0, allow_inf_nan=False)]
 NonNegative = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 LumberSize = Literal["2x6", "2x8", "2x10", "2x12"]
@@ -30,11 +32,61 @@ class Footprint(ConfigModel):
     width: Positive
     length: Positive
 
+    def plan(self) -> Plan:
+        """Return the rectangle with stable counterclockwise edge names."""
+        return Plan(
+            ("front", "right", "back", "left"),
+            ((0, 0), (self.width, 0), (self.width, self.length), (0, self.length)),
+        )
+
+
+class Vertex(ConfigModel):
+    """Start of a named counterclockwise polygon edge in world coordinates."""
+
+    name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
+    x: NonNegative
+    y: NonNegative
+
+
+class PolygonFootprint(ConfigModel):
+    """A simple orthogonal polygon, including concave L and U shapes."""
+
+    type: Literal["polygon"]
+    vertices: Annotated[tuple[Vertex, ...], Field(min_length=4, max_length=64)]
+
+    @field_validator("vertices", mode="before")
+    @classmethod
+    def freeze_vertices(cls, value: object) -> object:
+        """Convert TOML vertex arrays to immutable configuration."""
+        return tuple(value) if isinstance(value, list) else value
+
+    @model_validator(mode="after")
+    def check_ring(self) -> Self:
+        """Reject ambiguous names, self-intersections, and nonorthogonal rings."""
+        if len({v.name for v in self.vertices}) != len(self.vertices):
+            raise ValueError("polygon edge names must be unique")
+        validate_polygon(tuple((v.x, v.y) for v in self.vertices))
+        return self
+
+    @property
+    def width(self) -> float:
+        """Return the world x extent from the datum."""
+        return max(v.x for v in self.vertices)
+
+    @property
+    def length(self) -> float:
+        """Return the world y extent from the datum."""
+        return max(v.y for v in self.vertices)
+
+    def plan(self) -> Plan:
+        """Return the named plan ring."""
+        return Plan(tuple(v.name for v in self.vertices), tuple((v.x, v.y) for v in self.vertices))
+
 
 class Deck(ConfigModel):
     """Footprint and elevation of the finished decking surface."""
 
-    footprint: Footprint
+    footprint: Footprint | PolygonFootprint
     elevation: Positive = 24
 
 
@@ -120,6 +172,7 @@ class Border(ConfigModel):
     """Concentric mitered rows using the configured decking stock and gap."""
 
     rows: Annotated[int, Field(ge=0, le=10)] = 0
+    backing: bool = True
 
 
 class Decking(ConfigModel):
@@ -133,15 +186,12 @@ class Decking(ConfigModel):
     border: Border = Field(default_factory=Border)
 
 
-BoundaryName = Literal["front", "right", "back", "left"]
-
-
 class Stair(ConfigModel):
     """Stacked box stairs attached to a named footprint edge."""
 
     name: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
     system: Literal["box"] = "box"
-    edge: BoundaryName
+    edge: str = Field(pattern=r"^[a-z][a-z0-9_-]*$")
     offset: NonNegative = 0
     width: Positive = 48
     tread_depth: Positive = 11
@@ -225,13 +275,16 @@ class Project(ConfigModel):
         names = [stair.name for stair in self.stairs]
         if len(names) != len(set(names)):
             raise ValueError("stair names must be unique")
-        for edge in ("front", "right", "back", "left"):
+        boundaries = {edge.name: edge for edge in footprint.plan().boundaries}
+        for edge in boundaries:
             attached = sorted((s for s in self.stairs if s.edge == edge), key=lambda s: s.offset)
             for a, b in zip(attached, attached[1:], strict=False):
                 if a.offset + a.width > b.offset:
                     raise ValueError(f"stairs {a.name!r} and {b.name!r} overlap")
         for stair in self.stairs:
-            edge_length = footprint.width if stair.edge in ("front", "back") else footprint.length
+            if stair.edge not in boundaries:
+                raise ValueError(f"stair {stair.name!r} references unknown edge {stair.edge!r}")
+            edge_length = boundaries[stair.edge].length
             if stair.offset + stair.width > edge_length:
                 raise ValueError(f"stair {stair.name!r} extends beyond its edge")
             if stair.ground_elevation >= self.deck.elevation:

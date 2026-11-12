@@ -45,6 +45,7 @@ def export_project(project: Project, assembly: DeckAssembly, output: Path) -> tu
                 "units": "inches",
                 "parts": [asdict(p) for p in assembly.parts],
                 "boundaries": [asdict(edge) for edge in assembly.boundaries],
+                "connections": [asdict(connection) for connection in assembly.connections],
             },
             indent=2,
             allow_nan=False,
