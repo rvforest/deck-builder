@@ -90,3 +90,7 @@ GitHub Actions runs the same hooks on Python 3.12 and 3.13 and builds distributi
 
 The package lives in `src/deck_builder`. The original project-specific scripts are
 archived in [legacy/](legacy/README.md), outside the installed package and checks.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
