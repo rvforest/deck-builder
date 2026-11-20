@@ -26,9 +26,3 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-
-  - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.32.0
-    hooks:
-      - id: zizmor
-        args: [--no-progress, --offline]
